@@ -8,6 +8,9 @@ POST /add
 
 {
     did: 'did:vda:testnet:0x....',
-    
+    xpProofs: [
+        {...},
+        {...}
+    ]
 }
 ```
