@@ -1,0 +1,36 @@
+service: airdrop-api
+ 
+custom:
+  serverless-offline:
+    httpPort: 5022
+    noPrependStageInUrl: true
+    useChildProcesses: true
+  webpack:
+    includeModules: true
+    packagerOptions:
+      scripts:
+        - npm_config_platform=linux npm_config_arch=x64 yarn add leveldown
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: prod
+  region: us-east-1
+ 
+functions:
+  app:
+    handler: dist/server-app.handler
+    events:
+      - httpApi:
+          path: '/{proxy+}'
+          method: '*'
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-common-excludes  
+  - serverless-plugin-include-dependencies 
+
+package:
+  excludeDevDependencies: false
+  patterns:
+    - '!node_modules/**'  
