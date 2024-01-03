@@ -1,7 +1,7 @@
 node_modules
 coverage
 .env
-.env*
+.env
 dist/
 keys/
 v*/
@@ -9,3 +9,4 @@ serverconfig.*.json
 .DS_Store
 .serverless/
 *.log
+!.env.sample
