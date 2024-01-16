@@ -1,21 +1,21 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "target": "es6",
-        "noImplicitAny": true,
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "outDir": "dist",
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "node_modules/*"
-            ]
-        },
-        "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true
+  "compilerOptions": {
+    "strict": true,
+    "module": "node16",
+    "lib": ["es2023"],
+    "target": "es2022",
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"]
     },
-    "include": ["src/**/*"  ]
+    "outDir": "dist",
+    "sourceMap": true
+  }
 }
