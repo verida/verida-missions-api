@@ -1,7 +1,9 @@
-import express from 'express';
-import Controller from './controller';
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import express from "express";
+import { ControllerV1 } from "~/controller";
 
-const router = express.Router()
-router.post(/add/, Controller.add)
+const routerV1 = express.Router();
+routerV1.post("/add", (req, res) => ControllerV1.add(req, res));
 
-export default router
+export const router = express.Router();
+router.use("/api/rest/v1", routerV1);
