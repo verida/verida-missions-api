@@ -112,11 +112,15 @@ export class Service {
    * @param did
    */
   async validateActivityProofs(activities: UserActivityRecord[], did: string) {
+    // TODO: When verifying the XP points and computing the rewards, check the following:
+    // - activity is completed
+    // - activity id is among the known activities
+
     await Promise.all(
       activities.map(async (activity) => {
         const match = await this.verida.getValidDataSignatures(activity, did);
         if (!match) {
-          throw new Error("Invalid activity proof");
+          throw new Error("Invalid activity proofs");
         }
       })
     );

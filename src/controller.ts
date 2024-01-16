@@ -3,6 +3,7 @@
 import { Request, Response } from "express";
 import { CreateDto, CreateDtoSchema } from "./types";
 import { Service } from "./service";
+import { ZodError } from "zod";
 
 export class ControllerV1 {
   private service: Service;
@@ -74,13 +75,25 @@ export class ControllerV1 {
   }
 
   private async extractCreateRequestDto(req: Request): Promise<CreateDto> {
-    // Validate the DTO against the schema
-    const createDto = CreateDtoSchema.parse(req.body);
-    // Validate the activit proofs
+    let createDto: CreateDto;
+    try {
+      // Validate the DTO against the schema
+      createDto = CreateDtoSchema.parse(req.body);
+    } catch (error) {
+      // Catching the error here to re-throw a more appropriate message than the Zod one
+      if (error instanceof ZodError) {
+        const message = error.issues.map((issue) => issue.message).join(", ");
+        throw new Error(`Validation error: ${message}`);
+      }
+      throw new Error(`Validation error`);
+    }
+
+    // Validate the activity proofs
     await this.service.validateActivityProofs(
       createDto.activityProofs,
       createDto.did
     );
+    // Not catching the error here because
 
     return createDto;
   }
