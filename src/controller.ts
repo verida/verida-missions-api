@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request, Response } from "express";
-import { CreateDto, CreateDtoSchema } from "~/types";
-import { Service } from "~/service";
+import { CreateDto, CreateDtoSchema } from "./types";
+import { Service } from "./service";
 
 export class ControllerV1 {
   private service: Service;

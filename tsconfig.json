@@ -11,11 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"]
-    },
+    "baseUrl": "src",
     "outDir": "dist",
     "sourceMap": true
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

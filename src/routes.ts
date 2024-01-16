@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import express from "express";
-import { ControllerV1 } from "~/controller";
+import { ControllerV1 } from "./controller";
 
 const routerV1 = express.Router();
 const controllerV1 = new ControllerV1();

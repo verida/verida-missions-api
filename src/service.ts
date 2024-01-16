@@ -1,7 +1,7 @@
 import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
-import { config } from "~/config";
-import { CreateDto, UserActivityRecord } from "~/types";
+import { config } from "./config";
+import { CreateDto, UserActivityRecord } from "./types";
 
 export class Service {
   private notion: NotionClient;
@@ -105,6 +105,12 @@ export class Service {
     }
   }
 
+  /**
+   * Verify the signatures of the activities.
+   *
+   * @param activities
+   * @param did
+   */
   async validateActivityProofs(activities: UserActivityRecord[], did: string) {
     await Promise.all(
       activities.map(async (activity) => {

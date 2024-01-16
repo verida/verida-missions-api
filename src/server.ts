@@ -5,7 +5,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import serverless from "serverless-http";
-import { router } from "~/routes";
+import { router } from "./routes";
 
 const app = express();
 
