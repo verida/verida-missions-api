@@ -11,6 +11,29 @@ export class ControllerV1 {
     this.service = new Service();
   }
 
+  async checkExist(req: Request, res: Response) {
+    if (!req.params.did) {
+      return res.status(401).send({
+        status: "error",
+        message: "Missing DID parameter",
+      });
+    }
+
+    try {
+      const exists = await this.service.checkExist(req.params.did);
+      return res.status(200).send({
+        status: "success",
+        exists,
+      });
+    } catch (error) {
+      return res.status(500).send({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Something went wrong",
+      });
+    }
+  }
+
   async create(req: Request, res: Response) {
     let createDto: CreateDto;
 
@@ -27,7 +50,7 @@ export class ControllerV1 {
 
     try {
       // Check the DID doesn't already exist
-      const alreadyExists = await this.service.find(createDto.did);
+      const alreadyExists = await this.service.checkExist(createDto.did);
       if (alreadyExists) {
         return res.status(403).send({
           status: "error",

@@ -22,7 +22,7 @@ export class Service {
    * @param did the DID to find.
    * @returns a boolean indicating whether the DID exists in the database.
    */
-  async find(did: string) {
+  async checkExist(did: string) {
     const result = await this.notion.databases.query({
       database_id: config.NOTION_DB_ID,
       filter: {
