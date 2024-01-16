@@ -3,8 +3,8 @@
 import { Request, Response } from "express";
 import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
-import { EnvironmentType } from "@verida/types";
 import { ValidRequestParams } from "~/types";
+import { config } from "~/config";
 
 export class ControllerV1 {
   public static async add(req: Request, res: Response) {
@@ -12,12 +12,9 @@ export class ControllerV1 {
       const { walletAddress, did, profile } =
         await ControllerV1.validateRequest(req);
 
-      const NOTION_API_KEY = process.env.NOTION_API_KEY;
-      const NOTION_DB_ID = process.env.NOTION_DB_ID;
-
       // Initializing a client
       const notion = new NotionClient({
-        auth: NOTION_API_KEY,
+        auth: config.NOTION_API_KEY,
       });
 
       try {
@@ -32,7 +29,7 @@ export class ControllerV1 {
 
       // Check the wallet / DID doesn't already exist
       const result = await notion.databases.query({
-        database_id: NOTION_DB_ID || "", // FIXME: This is a temporary hack to get around the TS error
+        database_id: config.NOTION_DB_ID,
         filter: {
           or: [
             {
@@ -62,7 +59,7 @@ export class ControllerV1 {
       await notion.pages.create({
         parent: {
           type: "database_id",
-          database_id: NOTION_DB_ID || "", // FIXME: This is a temporary hack to get around the TS error
+          database_id: config.NOTION_DB_ID,
         },
         properties: {
           "Wallet address": {
@@ -135,7 +132,7 @@ export class ControllerV1 {
     }
 
     const client = new VeridaClient({
-      environment: <EnvironmentType>process.env.VERIDA_NETWORK,
+      environment: config.VERIDA_NETWORK,
     });
 
     const defaultXp = 50;
