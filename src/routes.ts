@@ -3,7 +3,8 @@ import express from "express";
 import { ControllerV1 } from "~/controller";
 
 const routerV1 = express.Router();
-routerV1.post("/add", (req, res) => ControllerV1.add(req, res));
+const controllerV1 = new ControllerV1();
+routerV1.post("/claims", (req, res) => controllerV1.create(req, res));
 
 export const router = express.Router();
 router.use("/api/rest/v1", routerV1);
