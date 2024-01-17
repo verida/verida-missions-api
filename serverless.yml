@@ -1,5 +1,5 @@
 service: airdrop-api
- 
+
 custom:
   serverless-offline:
     httpPort: 5022
@@ -13,24 +13,24 @@ custom:
 
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs20.x
   stage: prod
   region: us-east-1
- 
+
 functions:
   app:
-    handler: dist/server-app.handler
+    handler: dist/server.handler
     events:
       - httpApi:
-          path: '/{proxy+}'
-          method: '*'
+          path: "/{proxy+}"
+          method: "*"
 
 plugins:
   - serverless-offline
-  - serverless-plugin-common-excludes  
-  - serverless-plugin-include-dependencies 
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
 
 package:
   excludeDevDependencies: false
   patterns:
-    - '!node_modules/**'  
+    - "!node_modules/**"
