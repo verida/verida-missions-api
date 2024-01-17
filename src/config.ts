@@ -1,7 +1,7 @@
 import { EnvironmentType } from "@verida/types";
 import z from "zod";
 
-const EnvVarsSchem = z
+const EnvVarsSchema = z
   .object({
     VERIDA_NETWORK: z
       .enum(["local", "devnet", "testnet", "mainnet"])
@@ -23,4 +23,4 @@ const EnvVarsSchem = z
   .passthrough();
 
 // If the environment variables are not valid, an error will be thrown and the app won't start
-export const config = EnvVarsSchem.parse(process.env);
+export const config = EnvVarsSchema.parse(process.env);
