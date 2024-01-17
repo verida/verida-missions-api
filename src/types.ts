@@ -26,12 +26,12 @@ export type UserActivityRecord = z.infer<typeof UserActivityRecordSchema>;
 
 export type UserActivityStatus = "todo" | "pending" | "completed";
 
-export const UserInfoSchema = z.object({
+export const UserProfileInfoSchema = z.object({
   name: z.string(),
   country: z.string(),
 });
 
-export type UserProfileInfo = z.infer<typeof UserInfoSchema>;
+export type UserProfileInfo = z.infer<typeof UserProfileInfoSchema>;
 
 export const CreateDtoSchema = z.object({
   did: z
@@ -41,7 +41,7 @@ export const CreateDtoSchema = z.object({
     .string()
     .regex(EVM_ADDRESS_REGEXP, { message: "Not a valid EVM address" }),
   activityProofs: z.array(UserActivityRecordSchema),
-  profile: UserInfoSchema,
+  profile: UserProfileInfoSchema,
 });
 
 export type CreateDto = z.infer<typeof CreateDtoSchema>;
