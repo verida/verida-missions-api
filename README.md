@@ -62,3 +62,9 @@ Returns an object with a `status` property and a `message` in case of error.
   "message": "Something went wrong"
 }
 ```
+
+Get the version
+
+```
+GET /_version
+```

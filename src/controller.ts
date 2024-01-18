@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { CreateDto, CreateDtoSchema } from "./types";
 import { Service } from "./service";
 import { ZodError } from "zod";
+import { Version } from "./version";
 
 export class ControllerV1 {
   private service: Service;
@@ -97,4 +98,24 @@ export class ControllerV1 {
 
     return createDto;
   }
+
+  /**
+   * @summary Get deployed version
+   *
+   * @type GET
+   *
+   * @param {Request} Express request
+   * @param {Response} Express response
+   *
+   */
+  public getVersion(req: Request, res: Response): Response {
+    return res.status(200).send({
+      status: "success",
+      data: {
+        version: Version.version,
+        build_time_utc: Version.build_utc,
+      },
+    });
+  }
+
 }

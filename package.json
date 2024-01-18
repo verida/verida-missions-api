@@ -8,10 +8,11 @@
   "license": "ISC",
   "main": "dist/server.js",
   "scripts": {
+    "prebuild": "echo 'export const Version = { version: \"'$npm_package_version'\", build_utc: \"'$(date -u -Iseconds)'\" };' > ./src/version.ts",
     "build": "rm -rf dist && tsc",
     "check": "eslint .",
     "prestart": "yarn build",
-    "start": "sls offline start --stage offline --noTimeout",
+    "start": "yarn build && sls offline start --stage offline --noTimeout",
     "tests": "ts-mocha './tests/**/*.ts'",
     "deploy-prod": "yarn build && yarn sls deploy --stage prod"
   },

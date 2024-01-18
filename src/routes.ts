@@ -7,5 +7,7 @@ const controllerV1 = new ControllerV1();
 routerV1.get("/claims/:did", (req, res) => controllerV1.checkExist(req, res));
 routerV1.post("/claims", (req, res) => controllerV1.create(req, res));
 
+
 export const router = express.Router();
 router.use("/api/rest/v1", routerV1);
+router.get("/_version", (req, res) => controllerV1.getVersion(req, res));
