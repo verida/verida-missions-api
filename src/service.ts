@@ -2,6 +2,7 @@ import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "./config";
 import { CreateDto, UserActivityRecord } from "./types";
+import { activityXpPoints } from "./constants";
 
 export class Service {
   private notion: NotionClient;
@@ -112,17 +113,27 @@ export class Service {
    * @param did
    */
   async validateActivityProofs(activities: UserActivityRecord[], did: string) {
-    // TODO: When verifying the XP points and computing the rewards, check the following:
-    // - activity is completed
-    // - activity id is among the known activities
-
-    await Promise.all(
+    const points = await Promise.all(
       activities.map(async (activity) => {
         const match = await this.verida.getValidDataSignatures(activity, did);
         if (!match) {
-          throw new Error("Invalid activity proofs");
+          // If the activity record is not valid, return 0 points
+          return 0;
         }
+        if (activity.status !== "completed") {
+          //If the activity is not completed, return 0 points
+          return 0;
+        }
+        // If the activity id is not known, return 0 points
+        // Otherwise, return the number of points for the activity
+        return activityXpPoints[activity.id] || 0;
       })
     );
+
+    const totalPoints = points.reduce((a, b) => a + b, 0);
+
+    if (totalPoints < config.MIN_XP_POINTS) {
+      throw new Error("Not enough XP points");
+    }
   }
 }
