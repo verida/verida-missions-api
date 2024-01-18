@@ -88,7 +88,7 @@ export class ControllerV1 {
       throw new Error(`Validation error`);
     }
 
-    // Validate the activity proofs
+    // Validate the activity proofs and number of XP points
     await this.service.validateActivityProofs(
       createDto.activityProofs,
       createDto.did
