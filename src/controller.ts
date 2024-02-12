@@ -36,6 +36,7 @@ export class ControllerV1 {
   }
 
   async checkWhitelist1(req: Request, res: Response) {
+    const REDIRECT_URL = 'https://verida.network/whitelist'
     const address = <string | undefined>req.params.address
       ? req.params.address
       : req.query.address;
@@ -51,15 +52,7 @@ export class ControllerV1 {
       const exists = await this.service.checkWhitelist1(<string> address);
 
       if (exists) {
-        return res.status(200).send({
-          status: "success",
-          valid: exists,
-        });
-      } else {
-        return res.status(404).send({
-          status: "invalid",
-          valid: exists,
-        });
+        return res.redirect(`${REDIRECT_URL}?valid=true`)
       }
     } catch (error) {
       return res.status(500).send({
@@ -68,6 +61,8 @@ export class ControllerV1 {
           error instanceof Error ? error.message : "Something went wrong",
       });
     }
+
+    return res.redirect(`${REDIRECT_URL}?valid=false`)
   }
 
   async create(req: Request, res: Response) {
