@@ -36,7 +36,11 @@ export class ControllerV1 {
   }
 
   async checkWhitelist1(req: Request, res: Response) {
-    if (!req.params.address) {
+    const address = <string | undefined>req.params.address
+      ? req.params.address
+      : req.query.address;
+
+    if (!address) {
       return res.status(401).send({
         status: "error",
         message: "Missing address parameter",
@@ -44,7 +48,7 @@ export class ControllerV1 {
     }
 
     try {
-      const exists = await this.service.checkWhitelist1(req.params.address);
+      const exists = await this.service.checkWhitelist1(<string> address);
       return res.status(200).send({
         status: "success",
         valid: exists,
