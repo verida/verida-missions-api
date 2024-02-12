@@ -42,6 +42,43 @@ export class Service {
     return result.results.length > 0;
   }
 
+  async checkWhitelist1(address: string) {
+    const WHITELIST1_CUTOFF = '2024-02-07T23:59:99.000Z'
+    const result = await this.notion.databases.query({
+      database_id: config.NOTION_DB_ID,
+      filter: {
+        or: [
+          {
+            property: "DID",
+            title: {
+              equals: address,
+            },
+          },
+          {
+            property: "Wallet address",
+            title: {
+              equals: address,
+            },
+          },
+        ],
+      },
+    });
+
+    // Do not return the result, to prevent data leaks
+    if (result.results.length > 0) {
+      const record = result.results[0]
+      // @ts-ignore
+      const createdTimestamp = record.properties['Created time'].created_time
+      if (createdTimestamp > WHITELIST1_CUTOFF) {
+        return false
+      }
+
+      return true
+    } else {
+      return false
+    }
+  }
+
   /**
    * Create a new record in the database.
    *
