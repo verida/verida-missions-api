@@ -49,10 +49,18 @@ export class ControllerV1 {
 
     try {
       const exists = await this.service.checkWhitelist1(<string> address);
-      return res.status(200).send({
-        status: "success",
-        valid: exists,
-      });
+
+      if (exists) {
+        return res.status(200).send({
+          status: "success",
+          valid: exists,
+        });
+      } else {
+        return res.status(404).send({
+          status: "invalid",
+          valid: exists,
+        });
+      }
     } catch (error) {
       return res.status(500).send({
         status: "error",
