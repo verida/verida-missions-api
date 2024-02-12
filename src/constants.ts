@@ -12,3 +12,6 @@ export const activityXpPoints: Record<string, number> = {
   "claim-gamer31-steam-membership-credential": 50,
   "claim-gamer31-twitch-membership-credential": 50,
 };
+
+// Cutoff date is included (UTC timezone)
+export const WHITELIST_1_CUTOFF_DATE = "2024-02-07";

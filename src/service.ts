@@ -2,7 +2,7 @@ import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "./config";
 import { CreateDto, UserActivityRecord } from "./types";
-import { activityXpPoints } from "./constants";
+import { WHITELIST_1_CUTOFF_DATE, activityXpPoints } from "./constants";
 
 export class Service {
   private notion: NotionClient;
@@ -43,40 +43,39 @@ export class Service {
   }
 
   async checkWhitelist1(address: string) {
-    const WHITELIST1_CUTOFF = '2024-02-07T23:59:99.000Z'
+    // Query the Notion database filtering records before the whitelist 1 cutoff date
     const result = await this.notion.databases.query({
       database_id: config.NOTION_DB_ID,
       filter: {
-        or: [
+        and: [
           {
-            property: "DID",
-            title: {
-              equals: address,
+            timestamp: "created_time",
+            created_time: {
+              on_or_before: WHITELIST_1_CUTOFF_DATE,
             },
           },
           {
-            property: "Wallet address",
-            title: {
-              equals: address,
-            },
+            or: [
+              {
+                property: "DID",
+                title: {
+                  equals: address,
+                },
+              },
+              {
+                property: "Wallet address",
+                title: {
+                  equals: address,
+                },
+              },
+            ],
           },
         ],
       },
     });
 
     // Do not return the result, to prevent data leaks
-    if (result.results.length > 0) {
-      const record = result.results[0]
-      // @ts-ignore
-      const createdTimestamp = record.properties['Created time'].created_time
-      if (createdTimestamp > WHITELIST1_CUTOFF) {
-        return false
-      }
-
-      return true
-    } else {
-      return false
-    }
+    return result.results.length > 0;
   }
 
   /**
