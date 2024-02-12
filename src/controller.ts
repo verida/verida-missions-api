@@ -35,6 +35,33 @@ export class ControllerV1 {
     }
   }
 
+  async checkWhitelist1(req: Request, res: Response) {
+    const address = <string | undefined>req.params.address
+      ? req.params.address
+      : req.query.address;
+
+    if (!address) {
+      return res.status(401).send({
+        status: "error",
+        message: "Missing address parameter",
+      });
+    }
+
+    try {
+      const exists = await this.service.checkWhitelist1(<string> address);
+      return res.status(200).send({
+        status: "success",
+        valid: exists,
+      });
+    } catch (error) {
+      return res.status(500).send({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Something went wrong",
+      });
+    }
+  }
+
   async create(req: Request, res: Response) {
     let createDto: CreateDto;
 
@@ -88,7 +115,7 @@ export class ControllerV1 {
       throw new Error(`Validation error`);
     }
 
-    // Validate the activity proofs
+    // Validate the activity proofs and number of XP points
     await this.service.validateActivityProofs(
       createDto.activityProofs,
       createDto.did

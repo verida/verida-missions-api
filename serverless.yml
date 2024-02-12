@@ -1,10 +1,17 @@
 service: airdrop-api
-
+ 
 custom:
   serverless-offline:
     httpPort: 5022
     noPrependStageInUrl: true
     useChildProcesses: true
+  customDomain:
+    domainName: rewards.myrtle.verida.tech 
+    basePath: ''
+    certificateName: '*.myrtle.verida.tech'                     
+    endpointType: regional
+    createRoute53Record: true
+    apiType: http
   webpack:
     includeModules: true
     packagerOptions:
@@ -16,21 +23,22 @@ provider:
   runtime: nodejs20.x
   stage: prod
   region: us-east-1
-
+ 
 functions:
   app:
     handler: dist/server.handler
     events:
       - httpApi:
-          path: "/{proxy+}"
-          method: "*"
+          path: '/{proxy+}'
+          method: '*'
 
 plugins:
+  - serverless-dotenv-plugin
   - serverless-offline
-  - serverless-plugin-common-excludes
-  - serverless-plugin-include-dependencies
+  - serverless-domain-manager
+  - serverless-plugin-common-excludes  
+  - serverless-plugin-include-dependencies 
 
 package:
-  excludeDevDependencies: false
   patterns:
-    - "!node_modules/**"
+    - '!node_modules/**'  
