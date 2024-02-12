@@ -2,7 +2,7 @@ import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "./config";
 import { CreateDto, UserActivityRecord } from "./types";
-import { activityXpPoints } from "./constants";
+import { WHITELIST_1_CUTOFF_DATE, activityXpPoints } from "./constants";
 
 export class Service {
   private notion: NotionClient;
@@ -33,6 +33,42 @@ export class Service {
             title: {
               equals: did,
             },
+          },
+        ],
+      },
+    });
+
+    // Do not return the result, to prevent data leaks
+    return result.results.length > 0;
+  }
+
+  async checkWhitelist1(address: string) {
+    // Query the Notion database filtering records before the whitelist 1 cutoff date
+    const result = await this.notion.databases.query({
+      database_id: config.NOTION_DB_ID,
+      filter: {
+        and: [
+          {
+            timestamp: "created_time",
+            created_time: {
+              on_or_before: WHITELIST_1_CUTOFF_DATE,
+            },
+          },
+          {
+            or: [
+              {
+                property: "DID",
+                title: {
+                  equals: address,
+                },
+              },
+              {
+                property: "Wallet address",
+                title: {
+                  equals: address,
+                },
+              },
+            ],
           },
         ],
       },
