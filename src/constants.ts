@@ -14,4 +14,4 @@ export const activityXpPoints: Record<string, number> = {
 };
 
 // Cutoff date is included (UTC timezone)
-export const WHITELIST_1_CUTOFF_DATE = "2024-02-28";
+export const WHITELIST_1_CUTOFF_DATE = "2024-03-09";
