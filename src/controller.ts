@@ -36,7 +36,7 @@ export class ControllerV1 {
   }
 
   async checkWhitelist1(req: Request, res: Response) {
-    const REDIRECT_URL = 'https://verida.network/whitelist'
+    const REDIRECT_URL = 'https://www.verida.network/whitelist'
     const address = <string | undefined>req.params.address
       ? req.params.address
       : req.query.address;
@@ -55,11 +55,7 @@ export class ControllerV1 {
         return res.redirect(`${REDIRECT_URL}?valid=true`)
       }
     } catch (error) {
-      return res.status(500).send({
-        status: "error",
-        message:
-          error instanceof Error ? error.message : "Something went wrong",
-      });
+      // do nothing, return false below
     }
 
     return res.redirect(`${REDIRECT_URL}?valid=false`)
