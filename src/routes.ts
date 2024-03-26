@@ -11,7 +11,7 @@ routerV1.get("/whitelist1/:address", (req, res) =>
 routerV1.get("/whitelist1", (req, res) =>
   controllerV1.checkWhitelist1(req, res)
 );
-routerV1.get("/earlyadopterairdrop/:address", (req, res) =>
+routerV1.get("/earlyadopterairdrop", (req, res) =>
   controllerV1.checkEarlyAdopterWhitelist(req, res)
 );
 routerV1.post("/claims", (req, res) => controllerV1.create(req, res));
