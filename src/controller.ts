@@ -64,7 +64,7 @@ export class ControllerV1 {
   //http://localhost:5022/api/rest/v1/earlyadopterairdrop/0xabc
   async checkEarlyAdopterWhitelist(req: Request, res: Response) {
     // @todo: change to www.verida.network
-    const REDIRECT_URL = 'https://verida-network.webflow.io/early-adopters-airdrop-check'
+    const REDIRECT_URL = 'https://www.verida.network/early-adopters-airdrop-check'
     const address = <string | undefined>req.params.address
       ? req.params.address
       : req.query.address;
