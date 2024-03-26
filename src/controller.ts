@@ -61,6 +61,35 @@ export class ControllerV1 {
     return res.redirect(`${REDIRECT_URL}?valid=false`)
   }
 
+  //http://localhost:5022/api/rest/v1/earlyadopterairdrop/0xabc
+  async checkEarlyAdopterWhitelist(req: Request, res: Response) {
+    // @todo: change to www.verida.network
+    const REDIRECT_URL = 'https://verida-network.webflow.io/early-adopters-airdrop-check'
+    const address = <string | undefined>req.params.address
+      ? req.params.address
+      : req.query.address;
+
+    if (!address) {
+      return res.status(401).send({
+        status: "error",
+        message: "Missing address parameter",
+      });
+    }
+
+    try {
+      const exists = await this.service.checkEarlyAdopterWhitelist(<string> address);
+      console.log(exists)
+
+      if (exists) {
+        return res.redirect(`${REDIRECT_URL}?valid=true`)
+      }
+    } catch (error) {
+      // do nothing, return false below
+    }
+
+    return res.redirect(`${REDIRECT_URL}?valid=false`)
+  }
+
   async create(req: Request, res: Response) {
     let createDto: CreateDto;
 
