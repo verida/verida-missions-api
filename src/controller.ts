@@ -61,7 +61,14 @@ export class ControllerV1 {
     return res.redirect(`${REDIRECT_URL}?valid=false`)
   }
 
-  //http://localhost:5022/api/rest/v1/earlyadopterairdrop/0xabc
+  /**
+   * Rules:
+   * 
+   * 1. Must be on the `Airdrop XP` whitelist
+   * 2. DID must have been created prior to EARLY_ADOPTER_CUTOFF_DATE
+   * 
+   * Example URL: http://localhost:5022/api/rest/v1/earlyadopterairdrop/0xabc
+   */
   async checkEarlyAdopterWhitelist(req: Request, res: Response) {
     // @todo: change to www.verida.network
     const REDIRECT_URL = 'https://www.verida.network/early-adopters-airdrop-check'
@@ -78,7 +85,6 @@ export class ControllerV1 {
 
     try {
       const exists = await this.service.checkEarlyAdopterWhitelist(<string> address);
-      console.log(exists)
 
       if (exists) {
         return res.redirect(`${REDIRECT_URL}?valid=true`)

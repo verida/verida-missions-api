@@ -2,11 +2,7 @@ import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "./config";
 import { CreateDto, UserActivityRecord } from "./types";
-import {
-  WHITELIST_1_CUTOFF_DATE,
-  EARLY_ADOPTER_CUTOFF_DATE,
-  activityXpPoints,
-} from "./constants";
+import { EARLY_ADOPTER_CUTOFF_DATE, WHITELIST_1_CUTOFF_DATE, activityXpPoints } from "./constants";
 
 export class Service {
   private notion: NotionClient;
@@ -46,12 +42,36 @@ export class Service {
     return result.results.length > 0;
   }
 
+  /**
+   * Rules:
+   *
+   * 1. Must be on the `Airdrop XP` whitelist
+   * 2. DID must have been created prior to EARLY_ADOPTER_CUTOFF_DATE
+   */
   async checkEarlyAdopterWhitelist(address: string) {
-    return this.checkDatabase(
+    const inWhitelist = await this.checkDatabase(
       address,
-      config.EARLY_ADOPTER_NOTION_DB_ID,
-      EARLY_ADOPTER_CUTOFF_DATE
+      config.NOTION_DB_ID,
+      "2025-01-01"
     );
+
+    if (!inWhitelist) {
+      return false;
+    }
+
+    // Check the DID creation date is before EARLY_ADOPTER_CUTOFF_DATE
+    try {
+      const userDid = await this.verida.didClient.get(address);
+      const didData = userDid.export();
+
+      if (didData.created && didData.created < EARLY_ADOPTER_CUTOFF_DATE) {
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      return false;
+    }
   }
 
   async checkWhitelist1(address: string) {
