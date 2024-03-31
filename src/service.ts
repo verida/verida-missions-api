@@ -207,8 +207,9 @@ export class Service {
     );
 
     const totalPoints = points.reduce((a, b) => a + b, 0);
+    console.log(totalPoints);
 
-    if (totalPoints >= config.MIN_XP_POINTS) {
+    if (totalPoints < config.MIN_XP_POINTS) {
       throw new Error("Not enough XP points");
     }
   }
