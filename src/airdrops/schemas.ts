@@ -8,5 +8,6 @@ export const Airdrop1SubmitProofDtoSchema = z.object({
     .regex(VERIDA_DID_REGEXP, { message: "Not a valid Verida DID" }),
   activityProofs: z.array(UserActivityRecordSchema),
   profile: UserProfileInfoSchema,
+  location: z.string().optional(),
   termsAccepted: z.boolean().default(false),
 });

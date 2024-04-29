@@ -1,9 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request, Response } from "express";
+import { BadRequestError } from "../common";
 import { Service } from "./service";
-import { Airdrop1SubmitProofDto } from "./types";
-import { extractAirdrop1SubmitProofDtoFromRequest } from "./utils";
+import {
+  extractAirdrop1SubmitProofDtoFromRequest,
+  extractDidFromRequestParams,
+} from "./utils";
+import {
+  AlreadyExistsError,
+  NotEnoughXpPointsError,
+  TermsNotAcceptedError,
+  UnauthorizedCountryError,
+} from "./errors";
 
 export class ControllerV1 {
   private service: Service;
@@ -20,26 +27,27 @@ export class ControllerV1 {
    * @returns The response
    */
   async airdrop1CheckProofExist(req: Request, res: Response) {
-    const did = req.params.did;
-
-    if (!did) {
-      return res.status(401).send({
-        status: "error",
-        message: "Missing DID parameter",
-      });
-    }
-
     try {
+      const did = extractDidFromRequestParams(req);
+
       const exists = await this.service.checkAirdrop1ProofExist(did);
+
       return res.status(200).send({
         status: "success",
         exists,
       });
     } catch (error) {
+      if (error instanceof BadRequestError) {
+        return res.status(400).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
       return res.status(500).send({
         status: "error",
-        message:
-          error instanceof Error ? error.message : "Something went wrong",
+        errorMessage: "Something went wrong",
       });
     }
   }
@@ -52,44 +60,39 @@ export class ControllerV1 {
    * @returns The response
    */
   async airdrop1SubmitProof(req: Request, res: Response) {
-    let submitProofDto: Airdrop1SubmitProofDto;
-
     try {
-      // Get the DTO from the request. Will throw an error if invalid
-      submitProofDto = extractAirdrop1SubmitProofDtoFromRequest(req);
-    } catch (error) {
-      return res.status(401).send({
-        status: "error",
-        message:
-          error instanceof Error ? error.message : "Something went wrong",
-      });
-    }
+      const submitProofDto = extractAirdrop1SubmitProofDtoFromRequest(req);
 
-    try {
-      // Check the proof doesn't already exist
-      const alreadyExists = await this.service.checkAirdrop1ProofExist(
-        submitProofDto.did
-      );
-      if (alreadyExists) {
-        return res.status(403).send({
-          status: "error",
-          message: "Already submitted",
-        });
-      }
-
-      // Create the proof submission
       await this.service.submitAirdrop1Proof(submitProofDto);
 
       return res.status(201).send({
         status: "success",
       });
     } catch (error) {
-      // TODO: Identify the error and return a more specific message
+      if (error instanceof BadRequestError) {
+        return res.status(400).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (
+        error instanceof AlreadyExistsError ||
+        error instanceof NotEnoughXpPointsError ||
+        error instanceof TermsNotAcceptedError ||
+        error instanceof UnauthorizedCountryError
+      ) {
+        return res.status(403).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
 
       return res.status(500).send({
         status: "error",
-        message:
-          error instanceof Error ? error.message : "Something went wrong",
+        errorMessage: "Something went wrong",
       });
     }
   }
