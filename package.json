@@ -1,18 +1,19 @@
 {
-  "name": "@verida/airdrop-api",
+  "name": "@verida/missions-api",
   "version": "0.1.0",
-  "description": "An API that supports verifying XP to facilitate a Verida Airdrop",
+  "description": "An API that supports Verida Missions for rewards and airdrops",
   "private": true,
   "repository": "https://github.com/verida/airdrop-api",
   "author": "Verida",
   "license": "ISC",
   "main": "dist/server.js",
   "scripts": {
-    "build": "rm -rf dist && tsc",
     "check": "eslint .",
+    "tests": "ts-mocha './tests/**/*.ts'",
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
     "prestart": "yarn build",
     "start": "sls offline start --stage offline --noTimeout",
-    "tests": "ts-mocha './tests/**/*.ts'",
     "deploy-prod": "yarn build && yarn sls deploy --stage prod"
   },
   "dependencies": {
