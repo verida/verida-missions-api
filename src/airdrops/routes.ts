@@ -6,14 +6,10 @@ const controllerV1 = new ControllerV1();
 
 export const routerV1 = express.Router();
 
-routerV1.get("/claims/:did", (req, res) => controllerV1.checkExist(req, res));
-routerV1.get("/whitelist1/:address", (req, res) =>
-  controllerV1.checkWhitelist1(req, res)
+// Airdrop 1: Early adopter of Verida Missions
+routerV1.get("/1/proofs/:did", (req, res) =>
+  controllerV1.airdrop1CheckProofExist(req, res)
 );
-routerV1.get("/whitelist1", (req, res) =>
-  controllerV1.checkWhitelist1(req, res)
+routerV1.post("/1/proofs", (req, res) =>
+  controllerV1.airdrop1SubmitProof(req, res)
 );
-routerV1.get("/earlyadopterairdrop", (req, res) =>
-  controllerV1.checkEarlyAdopterWhitelist(req, res)
-);
-routerV1.post("/claims", (req, res) => controllerV1.create(req, res));

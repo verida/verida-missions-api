@@ -2,12 +2,8 @@ import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "../config";
 import { UserActivityRecord, getXpPointsForActivity } from "../missions";
-import {
-  MIN_XP_POINTS,
-  EARLY_ADOPTER_CUTOFF_DATE,
-  WHITELIST_1_CUTOFF_DATE,
-} from "./constants";
-import { CreateDto } from "./types";
+import { MIN_XP_POINTS, EARLY_ADOPTER_CUTOFF_DATE } from "./constants";
+import { Airdrop1SubmitProofDto } from "./types";
 
 export class Service {
   private notion: NotionClient;
@@ -23,14 +19,14 @@ export class Service {
   }
 
   /**
-   * Check if a DID exists in the database. Does not return the result, to prevent data leaks.
+   * Check a proof for the airdrop 1 already exists. Does not return the result, to prevent data leaks.
    *
-   * @param did the DID to find.
-   * @returns a boolean indicating whether the DID exists in the database.
+   * @param did the DID the proof has been submitted for.
+   * @returns a boolean indicating whether the proof has already been submitted.
    */
-  async checkExist(did: string) {
+  async checkAirdrop1ProofExist(did: string) {
     const result = await this.notion.databases.query({
-      database_id: config.NOTION_DB_ID,
+      database_id: config.AIRDROP_1_NOTION_DB_ID,
       filter: {
         or: [
           {
@@ -48,22 +44,68 @@ export class Service {
   }
 
   /**
-   * Rules:
+   * Sumbit a proof for the airdrop 1.
    *
-   * 1. Must be on the `Airdrop XP` whitelist
-   * 2. DID must have been created prior to EARLY_ADOPTER_CUTOFF_DATE
+   * @param submitProofDto the DTO of the proof.
    */
-  async checkEarlyAdopterWhitelist(address: string) {
-    const inWhitelist = await this.checkDatabase(
-      address,
-      config.NOTION_DB_ID,
-      "2025-01-01"
-    );
+  async submitAirdrop1Proof(submitProofDto: Airdrop1SubmitProofDto) {
+    // TODO: Check all conditions
+    // - proof records are valid
+    // - Minimum XP points
+    // - Country whitelist
+    // - Cutoff date
 
-    if (!inWhitelist) {
-      return false;
+    // Save into Notion DB
+    try {
+      await this.notion.pages.create({
+        parent: {
+          type: "database_id",
+          database_id: config.AIRDROP_1_NOTION_DB_ID,
+        },
+        properties: {
+          DID: {
+            type: "title",
+            title: [
+              {
+                type: "text",
+                text: {
+                  content: submitProofDto.did,
+                },
+              },
+            ],
+          },
+          Name: {
+            type: "rich_text",
+            rich_text: [
+              {
+                type: "text",
+                text: {
+                  content: submitProofDto.profile.name,
+                },
+              },
+            ],
+          },
+          Country: {
+            type: "rich_text",
+            rich_text: [
+              {
+                type: "text",
+                text: {
+                  content: submitProofDto.profile.country,
+                },
+              },
+            ],
+          },
+        },
+      });
+    } catch (error) {
+      throw new Error("Error while creating a new record");
     }
+  }
 
+  // =====================================================================
+
+  async checkEarlyAdopterWhitelist(address: string) {
     // Check the DID creation date is before EARLY_ADOPTER_CUTOFF_DATE
     try {
       const userDid = await this.verida.didClient.get(address);
@@ -79,120 +121,6 @@ export class Service {
     }
   }
 
-  async checkWhitelist1(address: string) {
-    return this.checkDatabase(
-      address,
-      config.NOTION_DB_ID,
-      WHITELIST_1_CUTOFF_DATE
-    );
-  }
-
-  async checkDatabase(address: string, databaseId: string, cutoffDate: string) {
-    // Query the Notion database filtering records before the cutoff date
-    const result = await this.notion.databases.query({
-      database_id: databaseId,
-      filter: {
-        and: [
-          {
-            timestamp: "created_time",
-            created_time: {
-              on_or_before: cutoffDate,
-            },
-          },
-          {
-            or: [
-              {
-                property: "DID",
-                title: {
-                  equals: address,
-                },
-              },
-              {
-                property: "Wallet address",
-                title: {
-                  equals: address,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    // Do not return the result, to prevent data leaks
-    return result.results.length > 0;
-  }
-
-  /**
-   * Create a new record in the database.
-   *
-   * @param createDto the DTO to create the record with.
-   */
-  async create(createDto: CreateDto) {
-    try {
-      await this.notion.pages.create({
-        parent: {
-          type: "database_id",
-          database_id: config.NOTION_DB_ID,
-        },
-        properties: {
-          "Wallet address": {
-            type: "title",
-            title: [
-              {
-                type: "text",
-                text: {
-                  content: createDto.userWalletAddress,
-                },
-              },
-            ],
-          },
-          "DID": {
-            type: "rich_text",
-            rich_text: [
-              {
-                type: "text",
-                text: {
-                  content: createDto.did,
-                },
-              },
-            ],
-          },
-          "Name": {
-            type: "rich_text",
-            rich_text: [
-              {
-                type: "text",
-                text: {
-                  content: createDto.profile.name,
-                },
-              },
-            ],
-          },
-          "Country": {
-            type: "rich_text",
-            rich_text: [
-              {
-                type: "text",
-                text: {
-                  content: createDto.profile.country,
-                },
-              },
-            ],
-          },
-        },
-      });
-    } catch (error) {
-      throw new Error("Error while creating a new record");
-    }
-  }
-
-  /**
-   * Verify the signatures of the activities.
-   *
-   * @param activities
-   * @param did
-   */
   async validateActivityProofs(activities: UserActivityRecord[], did: string) {
     const points = await Promise.all(
       activities.map(async (activity) => {

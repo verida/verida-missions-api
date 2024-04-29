@@ -18,8 +18,7 @@ const EnvVarsSchema = z
                 : EnvironmentType.TESTNET;
       }),
     NOTION_API_KEY: z.string(),
-    NOTION_DB_ID: z.string(),
-    EARLY_ADOPTER_NOTION_DB_ID: z.string(),
+    AIRDROP_1_NOTION_DB_ID: z.string(),
   })
   .passthrough();
 
