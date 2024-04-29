@@ -17,10 +17,6 @@ const EnvVarsSchema = z
                 ? EnvironmentType.MAINNET
                 : EnvironmentType.TESTNET;
       }),
-    MIN_XP_POINTS: z
-      .string()
-      .optional()
-      .transform((value) => parseInt(value || "0", 10)),
     NOTION_API_KEY: z.string(),
     NOTION_DB_ID: z.string(),
     EARLY_ADOPTER_NOTION_DB_ID: z.string(),

@@ -36,7 +36,7 @@ export class ControllerV1 {
   }
 
   async checkWhitelist1(req: Request, res: Response) {
-    const REDIRECT_URL = 'https://www.verida.network/whitelist'
+    const REDIRECT_URL = "https://www.verida.network/whitelist";
     const address = <string | undefined>req.params.address
       ? req.params.address
       : req.query.address;
@@ -49,29 +49,30 @@ export class ControllerV1 {
     }
 
     try {
-      const exists = await this.service.checkWhitelist1(<string> address);
+      const exists = await this.service.checkWhitelist1(<string>address);
 
       if (exists) {
-        return res.redirect(`${REDIRECT_URL}?valid=true`)
+        return res.redirect(`${REDIRECT_URL}?valid=true`);
       }
     } catch (error) {
       // do nothing, return false below
     }
 
-    return res.redirect(`${REDIRECT_URL}?valid=false`)
+    return res.redirect(`${REDIRECT_URL}?valid=false`);
   }
 
   /**
    * Rules:
-   * 
+   *
    * 1. Must be on the `Airdrop XP` whitelist
    * 2. DID must have been created prior to EARLY_ADOPTER_CUTOFF_DATE
-   * 
+   *
    * Example URL: http://localhost:5022/api/rest/v1/earlyadopterairdrop/0xabc
    */
   async checkEarlyAdopterWhitelist(req: Request, res: Response) {
     // @todo: change to www.verida.network
-    const REDIRECT_URL = 'https://www.verida.network/early-adopters-airdrop-check'
+    const REDIRECT_URL =
+      "https://www.verida.network/early-adopters-airdrop-check";
     const address = <string | undefined>req.params.address
       ? req.params.address
       : req.query.address;
@@ -84,16 +85,18 @@ export class ControllerV1 {
     }
 
     try {
-      const exists = await this.service.checkEarlyAdopterWhitelist(<string> address);
+      const exists = await this.service.checkEarlyAdopterWhitelist(
+        <string>address
+      );
 
       if (exists) {
-        return res.redirect(`${REDIRECT_URL}?valid=true`)
+        return res.redirect(`${REDIRECT_URL}?valid=true`);
       }
     } catch (error) {
       // do nothing, return false below
     }
 
-    return res.redirect(`${REDIRECT_URL}?valid=false`)
+    return res.redirect(`${REDIRECT_URL}?valid=false`);
   }
 
   async create(req: Request, res: Response) {

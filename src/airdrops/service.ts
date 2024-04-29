@@ -1,8 +1,14 @@
 import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
-import { config } from "./config";
-import { CreateDto, UserActivityRecord } from "./types";
-import { EARLY_ADOPTER_CUTOFF_DATE, WHITELIST_1_CUTOFF_DATE, activityXpPoints } from "./constants";
+import { config } from "../config";
+import { CreateDto } from "./types";
+import { UserActivityRecord } from "missions/types";
+import {
+  EARLY_ADOPTER_CUTOFF_DATE,
+  WHITELIST_1_CUTOFF_DATE,
+} from "./constants";
+import { MIN_XP_POINTS } from "./constants";
+import { getXpPointsForActivity } from "missions/utils";
 
 export class Service {
   private notion: NotionClient;
@@ -202,14 +208,13 @@ export class Service {
         }
         // If the activity id is not known, return 0 points
         // Otherwise, return the number of points for the activity
-        return activityXpPoints[activity.id] || 0;
+        return getXpPointsForActivity(activity.id);
       })
     );
 
     const totalPoints = points.reduce((a, b) => a + b, 0);
-    console.log(totalPoints);
 
-    if (totalPoints < config.MIN_XP_POINTS) {
+    if (totalPoints < MIN_XP_POINTS) {
       throw new Error("Not enough XP points");
     }
   }
