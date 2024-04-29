@@ -1,5 +1,5 @@
-import { UserActivityRecordSchema } from "missions/schemas";
 import z from "zod";
+import { UserActivityRecordSchema } from "../missions";
 
 export type UserActivityRecord = z.infer<typeof UserActivityRecordSchema>;
 

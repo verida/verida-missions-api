@@ -1,7 +1,10 @@
-import { UserProfileInfoSchema } from "common/schemas";
-import { EVM_ADDRESS_REGEXP, VERIDA_DID_REGEXP } from "common/utils";
-import { UserActivityRecordSchema } from "missions/schemas";
 import z from "zod";
+import {
+  UserProfileInfoSchema,
+  EVM_ADDRESS_REGEXP,
+  VERIDA_DID_REGEXP,
+} from "../common";
+import { UserActivityRecordSchema } from "../missions";
 
 export const CreateDtoSchema = z.object({
   did: z

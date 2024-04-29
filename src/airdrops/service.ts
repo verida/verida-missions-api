@@ -1,14 +1,13 @@
 import { Client as NotionClient } from "@notionhq/client";
 import { Client as VeridaClient } from "@verida/client-ts";
 import { config } from "../config";
-import { CreateDto } from "./types";
-import { UserActivityRecord } from "missions/types";
+import { UserActivityRecord, getXpPointsForActivity } from "../missions";
 import {
+  MIN_XP_POINTS,
   EARLY_ADOPTER_CUTOFF_DATE,
   WHITELIST_1_CUTOFF_DATE,
 } from "./constants";
-import { MIN_XP_POINTS } from "./constants";
-import { getXpPointsForActivity } from "missions/utils";
+import { CreateDto } from "./types";
 
 export class Service {
   private notion: NotionClient;
