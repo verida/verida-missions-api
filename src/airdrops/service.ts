@@ -11,7 +11,7 @@ import {
   TermsNotAcceptedError,
 } from "./errors";
 import { Airdrop1SubmitProofDto } from "./types";
-import { validateCountry } from "airdrops/utils";
+import { validateCountry } from "./utils";
 
 export class Service {
   private notionClient: NotionClient;
@@ -104,18 +104,26 @@ export class Service {
     const validActivities = userActivityValidationResults
       .filter(isPromiseFulfilled)
       .filter((result) => result.value.isValid)
-      .map((result) => result.value.activity)
-      .filter((activity) => {
-        // Filtering out activities completed after the cutt off date
-        return activity.modifiedAt < AIRDROP_1_CUTOFF_DATE;
-      });
+      .map((result) => result.value.activity);
 
     const totalXpPoints = validActivities
       .map((activity) => getXpPointsForActivity(activity.id))
       .reduce((a, b) => a + b, 0);
 
-    if (totalXpPoints < AIRDROP_1_MIN_XP_POINTS) {
-      throw new NotEnoughXpPointsError();
+    const totalXpPointsBeforeCuttoff = validActivities
+      .filter((activity) => {
+        // Filtering out activities completed after the cutt off date
+        return (
+          activity.completionDate &&
+          activity.completionDate < AIRDROP_1_CUTOFF_DATE
+        );
+      })
+      .map((activity) => getXpPointsForActivity(activity.id))
+      .reduce((a, b) => a + b, 0);
+
+    if (totalXpPointsBeforeCuttoff < AIRDROP_1_MIN_XP_POINTS) {
+      const message = `From your ${totalXpPoints} XP points, ${totalXpPointsBeforeCuttoff} have been earned before the eligibility date (${new Date(AIRDROP_1_CUTOFF_DATE).toLocaleDateString()})`;
+      throw new NotEnoughXpPointsError(undefined, message);
     }
 
     // Save into Notion DB
@@ -140,14 +148,16 @@ export class Service {
           },
           Name: {
             type: "rich_text",
-            rich_text: [
-              {
-                type: "text",
-                text: {
-                  content: profile.name,
-                },
-              },
-            ],
+            rich_text: profile.name
+              ? [
+                  {
+                    type: "text",
+                    text: {
+                      content: profile.name,
+                    },
+                  },
+                ]
+              : [],
           },
           Country: {
             type: "rich_text",

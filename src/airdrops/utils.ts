@@ -1,10 +1,10 @@
 import { Request } from "express";
 import { ZodError } from "zod";
+import { isValidVeridaDid, BadRequestError } from "../common";
+import { BLOCKED_COUNTRIES } from "./constants";
+import { UnauthorizedCountryError } from "./errors";
 import { Airdrop1SubmitProofDtoSchema } from "./schemas";
 import { Airdrop1SubmitProofDto } from "./types";
-import { isValidVeridaDid, BadRequestError } from "../common";
-import { UnauthorizedCountryError } from "airdrops/errors";
-import { BLOCKED_COUNTRIES } from "airdrops/constants";
 
 export function extractDidFromRequestParams(req: Request): string {
   const did = req.params.did;

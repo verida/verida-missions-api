@@ -10,6 +10,6 @@ export const VeridaBaseRecordSchema = z.object({
 });
 
 export const UserProfileInfoSchema = z.object({
-  name: z.string(),
+  name: z.string().optional(),
   country: z.string().optional(),
 });
