@@ -134,8 +134,7 @@ export class Service {
           database_id: config.AIRDROP_1_NOTION_DB_ID,
         },
         properties: {
-          // TODO: Add properties if needed (XP points, terms accepted, etc.)
-          DID: {
+          "DID": {
             type: "title",
             title: [
               {
@@ -146,20 +145,15 @@ export class Service {
               },
             ],
           },
-          Name: {
-            type: "rich_text",
-            rich_text: profile.name
-              ? [
-                  {
-                    type: "text",
-                    text: {
-                      content: profile.name,
-                    },
-                  },
-                ]
-              : [],
+          "Total XP points": {
+            type: "number",
+            number: totalXpPoints,
           },
-          Country: {
+          "XP points before cut-off": {
+            type: "number",
+            number: totalXpPointsBeforeCuttoff,
+          },
+          "Country": {
             type: "rich_text",
             rich_text: profile.country
               ? [
@@ -171,6 +165,10 @@ export class Service {
                   },
                 ]
               : [],
+          },
+          "Terms accepted": {
+            type: "checkbox",
+            checkbox: termsAccepted,
           },
         },
       });
