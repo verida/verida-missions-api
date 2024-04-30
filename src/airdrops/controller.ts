@@ -73,7 +73,8 @@ export class ControllerV1 {
         return res.status(400).send({
           status: "error",
           errorMessage: error.message,
-          errorUserMessage: error.userMessage,
+          errorUserMessage:
+            error.userMessage || "Something went wrong on our side",
         });
       }
 
@@ -93,6 +94,7 @@ export class ControllerV1 {
       return res.status(500).send({
         status: "error",
         errorMessage: "Something went wrong",
+        errorUserMessage: "Something went wrong on our side",
       });
     }
   }
