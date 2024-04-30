@@ -2,5 +2,8 @@
 import express from "express";
 import { routerV1 as airdropsRouterV1 } from "./airdrops";
 
-export const routerV1 = express.Router();
-routerV1.use("/v1/airdrops", airdropsRouterV1);
+const routerV1 = express.Router();
+routerV1.use("/airdrops", airdropsRouterV1);
+
+export const appRouter = express.Router();
+appRouter.use("/v1", routerV1);
