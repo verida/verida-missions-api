@@ -11,7 +11,7 @@ import {
   TermsNotAcceptedError,
 } from "./errors";
 import { Airdrop1SubmitProofDto } from "./types";
-import { validateCountry } from "./utils";
+import { getCountryFromIp, validateCountry } from "./utils";
 
 export class Service {
   private notionClient: NotionClient;
@@ -63,7 +63,7 @@ export class Service {
    * @param submitProofDto the DTO of the proof.
    */
   async submitAirdrop1Proof(submitProofDto: Airdrop1SubmitProofDto) {
-    const { activityProofs, did, profile, location, termsAccepted } =
+    const { activityProofs, did, profile, ipAddress, termsAccepted } =
       submitProofDto;
 
     const alreadyExists = await this.checkAirdrop1ProofExist(did);
@@ -80,13 +80,16 @@ export class Service {
       throw new TermsNotAcceptedError();
     }
 
-    //  ----- Terms and Conditions -----
+    //  ----- Country -----
 
     // Check country fromn profile
     validateCountry(profile.country); // Throw an error if invalid
 
     // Check country from user's location
-    validateCountry(location); // Throw an error if invalid
+    const requesterCountry = ipAddress
+      ? await getCountryFromIp(ipAddress)
+      : undefined;
+    validateCountry(requesterCountry); // Throw an error if invalid
 
     //  ----- Check user activities and XP points -----
 
