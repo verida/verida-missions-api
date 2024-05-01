@@ -14,7 +14,8 @@
     "build": "tsc",
     "prestart": "yarn build",
     "start": "sls offline start --stage offline --noTimeout",
-    "deploy-prod": "yarn build && yarn sls deploy --stage prod"
+    "tests": "ts-mocha './tests/**/*.ts'",
+    "deploy-prod": "export AWS_PROFILE=verida-mainnet && yarn build && yarn sls deploy --stage prod"
   },
   "dependencies": {
     "@notionhq/client": "^2.2.14",
