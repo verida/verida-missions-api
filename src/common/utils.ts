@@ -9,8 +9,8 @@ export const VERIDA_DID_REGEXP =
  * @param address The address or value to test.
  * @returns `true` if a valid EVM address, `false` otherwise.
  */
-export function isValidEvmAddress(address: string) {
-  return EVM_ADDRESS_REGEXP.test(address);
+export function isValidEvmAddress(address?: string): boolean {
+  return address ? EVM_ADDRESS_REGEXP.test(address) : false;
 }
 
 /**
@@ -19,6 +19,12 @@ export function isValidEvmAddress(address: string) {
  * @param did The DID or value to test.
  * @returns `true` if a valid Verida DID, `false` otherwise.
  */
-export function isValidVeridaDid(did: string) {
-  return VERIDA_DID_REGEXP.test(did);
+export function isValidVeridaDid(did?: string): boolean {
+  return did ? VERIDA_DID_REGEXP.test(did) : false;
+}
+
+export function isPromiseFulfilled<T>(
+  result: PromiseSettledResult<T>
+): result is PromiseFulfilledResult<T> {
+  return result.status === "fulfilled";
 }

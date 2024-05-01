@@ -1,4 +1,4 @@
-export const activityXpPoints: Record<string, number> = {
+export const ACTIVITY_XP_POINTS: Record<string, number> = {
   "create-verida-identity": 100,
   "update-profile": 50,
   "use-markdown-editor": 50,
@@ -12,7 +12,3 @@ export const activityXpPoints: Record<string, number> = {
   "claim-gamer31-steam-membership-credential": 50,
   "claim-gamer31-twitch-membership-credential": 50,
 };
-
-// Cutoff date is included (UTC timezone)
-export const WHITELIST_1_CUTOFF_DATE = "2024-03-14";
-export const EARLY_ADOPTER_CUTOFF_DATE = "2024-03-21";
