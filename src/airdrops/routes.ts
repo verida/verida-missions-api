@@ -13,3 +13,8 @@ routerV1.get("/1/proofs/:did", (req, res) =>
 routerV1.post("/1/proofs", (req, res) =>
   controllerV1.airdrop1SubmitProof(req, res)
 );
+
+// Airdrop 2: Galxe and Zealy participants
+routerV1.get("/2/eligibility/:did", (req, res) =>
+  controllerV1.airdrop2CheckEligibility(req, res)
+);

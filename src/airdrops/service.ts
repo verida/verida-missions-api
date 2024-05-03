@@ -181,4 +181,35 @@ export class Service {
       });
     }
   }
+
+  /**
+   * Check if a user is eligible for the airdrop 2. Does not return the result, to prevent data leaks.
+   *
+   * @param did the DID of the user to check.
+   * @returns a boolean indicating whether the user is eligible.
+   */
+  async checkAirdrop2Eligibility(did: string): Promise<boolean> {
+    try {
+      const result = await this.notionClient.databases.query({
+        database_id: config.AIRDROP_2_NOTION_DB_ID,
+        filter: {
+          or: [
+            {
+              property: "DID",
+              title: {
+                equals: did,
+              },
+            },
+          ],
+        },
+      });
+
+      // Do not return the result, to prevent data leaks
+      return result.results.length > 0;
+    } catch (error) {
+      throw new NotionError("Error while querying the database", undefined, {
+        cause: error,
+      });
+    }
+  }
 }

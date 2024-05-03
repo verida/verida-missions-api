@@ -19,6 +19,8 @@ export class ControllerV1 {
     this.service = new Service();
   }
 
+  // MARK: Airdrop 1: Early adopters of Verida Missions
+
   /**
    * Check if a proof for the airdrop 1 has already been submitted for a given did
    *
@@ -99,6 +101,44 @@ export class ControllerV1 {
         errorMessage: "Something went wrong",
         errorUserMessage:
           "Something went wrong on our side. Please try again later.",
+      });
+    }
+  }
+
+  // MARK: Airdrop 2: Galxe and Zealy participants
+
+  /**
+   * Check if a user is eligible for the airdrop 2.
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2CheckEligibility(req: Request, res: Response) {
+    try {
+      const did = extractDidFromRequestParams(req);
+
+      const isEligible = await this.service.checkAirdrop2Eligibility(did);
+
+      // TODO: Type the response
+      return res.status(200).send({
+        status: "success",
+        isEligible,
+      });
+    } catch (error) {
+      if (error instanceof BadRequestError) {
+        // TODO: Type the response
+        return res.status(400).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      // TODO: Type the response
+      return res.status(500).send({
+        status: "error",
+        errorMessage: "Something went wrong",
       });
     }
   }
