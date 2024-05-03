@@ -70,7 +70,7 @@ export async function getCountryFromIp(
   }
 }
 
-export function validateCountry(country?: string) {
+export function validateCountry(country?: string): void {
   if (!country) {
     throw new UnauthorizedCountryError();
   }

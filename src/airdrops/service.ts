@@ -32,7 +32,7 @@ export class Service {
    * @param did the DID the proof has been submitted for.
    * @returns a boolean indicating whether the proof has already been submitted.
    */
-  async checkAirdrop1ProofExist(did: string) {
+  async checkAirdrop1ProofExist(did: string): Promise<boolean> {
     try {
       const result = await this.notionClient.databases.query({
         database_id: config.AIRDROP_1_NOTION_DB_ID,
@@ -62,7 +62,9 @@ export class Service {
    *
    * @param submitProofDto the DTO of the proof.
    */
-  async submitAirdrop1Proof(submitProofDto: Airdrop1SubmitProofDto) {
+  async submitAirdrop1Proof(
+    submitProofDto: Airdrop1SubmitProofDto
+  ): Promise<void> {
     const { activityProofs, did, profile, ipAddress, termsAccepted } =
       submitProofDto;
 

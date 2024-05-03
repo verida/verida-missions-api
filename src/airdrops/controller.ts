@@ -1,16 +1,21 @@
 import { Request, Response } from "express";
-import { BadRequestError } from "../common";
-import { Service } from "./service";
-import {
-  extractAirdrop1SubmitProofDtoFromRequest,
-  extractDidFromRequestParams,
-} from "./utils";
+import { BadRequestError, ErrorResponse } from "../common";
 import {
   AlreadyExistsError,
   NotEnoughXpPointsError,
   TermsNotAcceptedError,
   UnauthorizedCountryError,
 } from "./errors";
+import { Service } from "./service";
+import {
+  extractAirdrop1SubmitProofDtoFromRequest,
+  extractDidFromRequestParams,
+} from "./utils";
+import {
+  Airdrop1CheckProofExistSuccessResponse,
+  Airdrop1SubmitProofSuccessResponse,
+  Airdrop2CheckEligibilitySuccessResponse,
+} from "./types";
 
 export class ControllerV1 {
   private service: Service;
@@ -28,7 +33,10 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1CheckProofExist(req: Request, res: Response) {
+  async airdrop1CheckProofExist(
+    req: Request,
+    res: Response<Airdrop1CheckProofExistSuccessResponse | ErrorResponse>
+  ) {
     try {
       const did = extractDidFromRequestParams(req);
 
@@ -61,7 +69,10 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1SubmitProof(req: Request, res: Response) {
+  async airdrop1SubmitProof(
+    req: Request,
+    res: Response<Airdrop1SubmitProofSuccessResponse | ErrorResponse>
+  ) {
     try {
       const submitProofDto = extractAirdrop1SubmitProofDtoFromRequest(req);
 
@@ -114,20 +125,21 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop2CheckEligibility(req: Request, res: Response) {
+  async airdrop2CheckEligibility(
+    req: Request,
+    res: Response<Airdrop2CheckEligibilitySuccessResponse | ErrorResponse>
+  ) {
     try {
       const did = extractDidFromRequestParams(req);
 
       const isEligible = await this.service.checkAirdrop2Eligibility(did);
 
-      // TODO: Type the response
       return res.status(200).send({
         status: "success",
         isEligible,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
-        // TODO: Type the response
         return res.status(400).send({
           status: "error",
           errorMessage: error.message,
@@ -135,7 +147,6 @@ export class ControllerV1 {
         });
       }
 
-      // TODO: Type the response
       return res.status(500).send({
         status: "error",
         errorMessage: "Something went wrong",
