@@ -10,6 +10,7 @@ import { Service } from "./service";
 import {
   extractAirdrop1SubmitProofDtoFromRequest,
   extractDidFromRequestParams,
+  extractWalletFromRequestParams,
 } from "./utils";
 import {
   Airdrop1CheckProofExistSuccessResponse,
@@ -130,9 +131,9 @@ export class ControllerV1 {
     res: Response<Airdrop2CheckEligibilitySuccessResponse | ErrorResponse>
   ) {
     try {
-      const did = extractDidFromRequestParams(req);
+      const wallet = extractWalletFromRequestParams(req);
 
-      const isEligible = await this.service.checkAirdrop2Eligibility(did);
+      const isEligible = await this.service.checkAirdrop2Eligibility(wallet);
 
       return res.status(200).send({
         status: "success",

@@ -1,6 +1,10 @@
 import { Request } from "express";
 import { ZodError } from "zod";
-import { isValidVeridaDid, BadRequestError } from "../common";
+import {
+  isValidVeridaDid,
+  BadRequestError,
+  isValidEvmAddress,
+} from "../common";
 import { BLOCKED_COUNTRIES } from "./constants";
 import { UnauthorizedCountryError } from "./errors";
 import { Airdrop1SubmitProofDtoSchema } from "./schemas";
@@ -15,6 +19,17 @@ export function extractDidFromRequestParams(req: Request): string {
   }
 
   throw new BadRequestError("Invalid DID parameter in request");
+}
+
+export function extractWalletFromRequestParams(req: Request): string {
+  const wallet = req.params.wallet;
+
+  const isValid = isValidEvmAddress(wallet);
+  if (isValid) {
+    return wallet;
+  }
+
+  throw new BadRequestError("Invalid wallet parameter in request");
 }
 
 export function extractAirdrop1SubmitProofDtoFromRequest(
