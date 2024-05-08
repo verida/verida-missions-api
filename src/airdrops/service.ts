@@ -32,7 +32,7 @@ export class Service {
    * @param did the DID the proof has been submitted for.
    * @returns a boolean indicating whether the proof has already been submitted.
    */
-  async checkAirdrop1ProofExist(did: string) {
+  async checkAirdrop1ProofExist(did: string): Promise<boolean> {
     try {
       const result = await this.notionClient.databases.query({
         database_id: config.AIRDROP_1_NOTION_DB_ID,
@@ -62,7 +62,9 @@ export class Service {
    *
    * @param submitProofDto the DTO of the proof.
    */
-  async submitAirdrop1Proof(submitProofDto: Airdrop1SubmitProofDto) {
+  async submitAirdrop1Proof(
+    submitProofDto: Airdrop1SubmitProofDto
+  ): Promise<void> {
     const { activityProofs, did, profile, ipAddress, termsAccepted } =
       submitProofDto;
 
@@ -177,6 +179,37 @@ export class Service {
       });
     } catch (error) {
       throw new NotionError("Error while creating a new record", undefined, {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * Check if a user is eligible for the airdrop 2. Does not return the result, to prevent data leaks.
+   *
+   * @param wallet the wallet address of the user to check.
+   * @returns a boolean indicating whether the user is eligible.
+   */
+  async checkAirdrop2Eligibility(wallet: string): Promise<boolean> {
+    try {
+      const result = await this.notionClient.databases.query({
+        database_id: config.AIRDROP_2_NOTION_DB_ID,
+        filter: {
+          or: [
+            {
+              property: "Wallet",
+              title: {
+                equals: wallet,
+              },
+            },
+          ],
+        },
+      });
+
+      // Do not return the result, to prevent data leaks
+      return result.results.length > 0;
+    } catch (error) {
+      throw new NotionError("Error while querying the database", undefined, {
         cause: error,
       });
     }

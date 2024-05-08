@@ -19,6 +19,7 @@ const EnvVarsSchema = z
       }),
     NOTION_API_KEY: z.string(),
     AIRDROP_1_NOTION_DB_ID: z.string(),
+    AIRDROP_2_NOTION_DB_ID: z.string(),
   })
   .passthrough();
 
