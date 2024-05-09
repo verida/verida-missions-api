@@ -1,12 +1,40 @@
-service: airdrop-api
+service: airdrop-api # TODO: Rename to verida-missions-api
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage}
+  region: ${env:AWS_LAMBDA_REGION}
+
+functions:
+  app:
+    handler: build/server.handler
+    events:
+      - httpApi:
+          path: "/{proxy+}"
+          method: "*"
+    environment:
+      VERIDA_NETWORK: ${VERIDA_NETWORK}
+      NOTION_API_KEY: ${NOTION_API_KEY}
+      AIRDROP_1_NOTION_DB_ID: ${AIRDROP_1_NOTION_DB_ID}
+      AIRDROP_2_NOTION_DB_ID: ${AIRDROP_2_NOTION_DB_ID}
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+  - serverless-domain-manager
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
 
 custom:
   serverless-offline:
-    httpPort: 5022
+    httpPort: ${env:PORT}
     noPrependStageInUrl: true
     useChildProcesses: true
   customDomain:
-    domainName: rewards.myrtle.verida.tech
+    domainName: rewards.myrtle.verida.tech # TODO: Move to env var so it depends on the environment/stage
     basePath: ""
     certificateName: "*.myrtle.verida.tech"
     endpointType: regional
@@ -16,28 +44,7 @@ custom:
     includeModules: true
     packagerOptions:
       scripts:
-        - npm_config_platform=linux npm_config_arch=x64 yarn add leveldown
-
-provider:
-  name: aws
-  runtime: nodejs20.x
-  stage: prod
-  region: us-east-1
-
-functions:
-  app:
-    handler: build/server.handler
-    events:
-      - httpApi:
-          path: "/{proxy+}"
-          method: "*"
-
-plugins:
-  - serverless-dotenv-plugin
-  - serverless-offline
-  - serverless-domain-manager
-  - serverless-plugin-common-excludes
-  - serverless-plugin-include-dependencies
+        - npm_config_platform=linux npm_config_arch=x64 yarn add leveldown ## TODO: Check if still necessary
 
 package:
   patterns:
