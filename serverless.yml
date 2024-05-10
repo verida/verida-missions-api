@@ -1,4 +1,4 @@
-service: airdrop-api # TODO: Rename to verida-missions-api
+service: missions-api
 
 useDotenv: true
 
