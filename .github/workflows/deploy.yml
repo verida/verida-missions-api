@@ -47,15 +47,15 @@ jobs:
       - name: Check linting and formatting
         run: yarn run check
 
-      - name: Check build
+      - name: Build
         run: yarn run build
 
       - name: Deploy server to Lambda
-        # Run sls directly rather than using a yarn script, so we can pass a variable for the stage
-        run: npx serverless deploy --stage $AWS_LAMBDA_STAGE
         # serverless.yml cannot take the stage from env vars so have to set it in cli options
         env:
           AWS_LAMBDA_STAGE: ${{ secrets.LAMBDA_STAGE }}
           AWS_LAMBDA_REGION: ${{ secrets.LAMBDA_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # Run sls directly rather than using a yarn script, so we can pass a variable for the stage
+        run: npx serverless deploy --stage $AWS_LAMBDA_STAGE
