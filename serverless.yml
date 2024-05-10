@@ -24,7 +24,7 @@ functions:
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
-  - serverless-domain-manager
+  # - serverless-domain-manager
   - serverless-plugin-common-excludes
   - serverless-plugin-include-dependencies
 
