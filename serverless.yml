@@ -16,10 +16,10 @@ functions:
           path: "/{proxy+}"
           method: "*"
     environment:
-      VERIDA_NETWORK: ${VERIDA_NETWORK, 'devnet'}
-      NOTION_API_KEY: ${NOTION_API_KEY}
-      AIRDROP_1_NOTION_DB_ID: ${AIRDROP_1_NOTION_DB_ID}
-      AIRDROP_2_NOTION_DB_ID: ${AIRDROP_2_NOTION_DB_ID}
+      VERIDA_NETWORK: ${env:VERIDA_NETWORK, 'devnet'}
+      NOTION_API_KEY: ${env:NOTION_API_KEY}
+      AIRDROP_1_NOTION_DB_ID: ${env:AIRDROP_1_NOTION_DB_ID}
+      AIRDROP_2_NOTION_DB_ID: ${env:AIRDROP_2_NOTION_DB_ID}
 
 plugins:
   - serverless-dotenv-plugin
