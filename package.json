@@ -15,7 +15,7 @@
     "check": "yarn run format:check && yarn run lint:check",
     "fix": "yarn run format && yarn run lint",
     "test": "ts-mocha './tests/**/*.ts'",
-    "prebuild": "rm -rf build && echo 'export const Version = { version: \"'$npm_package_version'\", build_utc: \"'$(date -u -Iseconds)'\" };' > ./src/version/version.ts",
+    "prebuild": "rm -rf build && echo 'export const Version = { version: \"'$npm_package_version'\", build_time_utc: \"'$(date -u -Iseconds)'\" };' > ./src/version/version.ts",
     "build": "tsc",
     "prestart": "yarn run build",
     "start": "sls offline start --stage offline --noTimeout",
