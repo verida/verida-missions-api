@@ -7,12 +7,10 @@ export class Controller {
   }
 
   /**
-   * @summary Get deployed version
+   * Get deployed version and build time
    *
-   * @type GET
-   *
-   * @param {Request} Express request
-   * @param {Response} Express response
+   * @param req The Express request object
+   * @param res The Express response object
    *
    */
   public getVersion(req: Request, res: Response): Response {
