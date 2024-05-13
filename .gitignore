@@ -1,6 +1,7 @@
 node_modules
 coverage
 dist/
+build/
 keys/
 v*/
 serverconfig.*.json
@@ -9,4 +10,4 @@ serverconfig.*.json
 *.log
 
 .env*
-!.env.sample
+!.env.example
