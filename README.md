@@ -1,70 +1,60 @@
-# Airdrop API
+# Verida Missions API
 
-This is a basic API with endpoints to check and submit claims and add the info to a Notion database.
+This is a REST API for the Verida Missions web app with endpoints to deal with the airdrops and other resources.
 
 ## Endpoints
 
-### Check a claim
-
-Check a claim has already been submitted for a DID.
-
 ```
-GET /api/rest/v1/claims/:did
-```
-
-Returns a boolean `exists` property.
-
-```json
-{
-  "status": "success"
-  "exists": true
-}
+GET  /_version
+GET  /api/rest/v1/airdrops/1/proofs/:did
+POST /api/rest/v1/airdrops/1/proofs/
+GET  /api/rest/v1/airdrops/2/eligibility/:wallet
 ```
 
-### Submit a claim
+(This list may not be up to date, check the `routes` and the `controller` files)
 
-Submit a claim for a given DID
+## Development
 
-```
-POST /api/rest/v1/claims
-```
+This is a serverless application.
 
-payload:
+### Installation
 
-```json
-{
-  "did": "did:vda:testnet:0x...",
-  "userWalletAddress": "0x...",
-  "activityProofs": [
-    {
-      "id": "create-verida-identity",
-      "status": "completed"
-    }
-  ],
-  "profile": {
-    "name": "User Name",
-    "country": "Australia"
-  }
-}
-```
-
-Returns an object with a `status` property and a `message` in case of error.
-
-```json
-{
-  "status": "success"
-}
-```
-
-```json
-{
-  "status": "error",
-  "message": "Something went wrong"
-}
-```
-
-Get the version
+Install the dependencies with `yarn`:
 
 ```
-GET /_version
+yarn install
 ```
+
+Some environment variables are required for the application to run. Have a look at the provided examples.
+
+Copy `.env.example`, rename it to `.env` and modify the variables for your local environment:
+
+```
+cp .env.example .env
+```
+
+### Run
+
+The application can be started with the offline serverless plugin simulating the AWS Lambda environment:
+
+```
+yarn run start
+```
+
+### Test
+
+```
+yarn run test
+```
+
+### Build
+
+```
+yarn run build
+```
+
+Messages are compiled automatically before the build.
+
+## Deployment
+
+TBD

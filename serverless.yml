@@ -1,44 +1,43 @@
-service: airdrop-api
- 
-custom:
-  serverless-offline:
-    httpPort: 5022
-    noPrependStageInUrl: true
-    useChildProcesses: true
-  customDomain:
-    domainName: rewards.myrtle.verida.tech 
-    basePath: ''
-    certificateName: '*.myrtle.verida.tech'                     
-    endpointType: regional
-    createRoute53Record: true
-    apiType: http
-  webpack:
-    includeModules: true
-    packagerOptions:
-      scripts:
-        - npm_config_platform=linux npm_config_arch=x64 yarn add leveldown
+service: missions-api
+
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs20.x
-  stage: prod
-  region: us-east-1
- 
+  stage: ${opt:stage}
+  region: ${env:AWS_LAMBDA_REGION, 'us-east-1'}
+
 functions:
   app:
-    handler: dist/server.handler
+    handler: build/server.handler
     events:
       - httpApi:
-          path: '/{proxy+}'
-          method: '*'
+          path: "/{proxy+}"
+          method: "*"
+    environment:
+      VERIDA_NETWORK: ${env:VERIDA_NETWORK, 'devnet'}
+      NOTION_API_KEY: ${env:NOTION_API_KEY}
+      AIRDROP_1_NOTION_DB_ID: ${env:AIRDROP_1_NOTION_DB_ID}
+      AIRDROP_2_NOTION_DB_ID: ${env:AIRDROP_2_NOTION_DB_ID}
 
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
-  - serverless-domain-manager
-  - serverless-plugin-common-excludes  
-  - serverless-plugin-include-dependencies 
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
+
+custom:
+  serverless-offline:
+    httpPort: ${env:PORT, '5022'}
+    noPrependStageInUrl: true
+    useChildProcesses: true
+  webpack:
+    includeModules: true
+    packagerOptions:
+      scripts:
+        - npm_config_platform=linux npm_config_arch=x64 yarn add leveldown ## TODO: Check if still necessary
 
 package:
   patterns:
-    - '!node_modules/**'  
+    - "!node_modules/**"

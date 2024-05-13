@@ -1,5 +1,5 @@
-export const activityXpPoints: Record<string, number> = {
-  "create-verida-identity": 50,
+export const ACTIVITY_XP_POINTS: Record<string, number> = {
+  "create-verida-identity": 100,
   "update-profile": 50,
   "use-markdown-editor": 50,
   "refer-friend": 100,
