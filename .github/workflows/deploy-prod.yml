@@ -1,0 +1,13 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+  # Manual dispatch for now as we test it.
+  # TODO: Replace by automatic trigger like "on tag" or "on push to main"
+
+jobs:
+  call_deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
