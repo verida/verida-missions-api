@@ -5,7 +5,7 @@ This is a REST API for the Verida Missions web app with endpoints to deal with t
 ## Endpoints
 
 ```
-GET  /_version
+GET  /_status
 GET  /api/rest/v1/airdrops/1/proofs/:did
 POST /api/rest/v1/airdrops/1/proofs/
 GET  /api/rest/v1/airdrops/2/eligibility/:wallet
