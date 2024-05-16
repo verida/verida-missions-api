@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Version } from "./version";
-import { VersionSuccessResponse } from "./types";
+import { StatusSuccessResponse } from "./types";
 
 export class Controller {
   constructor() {
@@ -14,16 +14,13 @@ export class Controller {
    * @param res The Express response object
    *
    */
-  public getVersion(
+  public getStatus(
     req: Request,
-    res: Response<VersionSuccessResponse>
+    res: Response<StatusSuccessResponse>
   ): Response {
     return res.status(200).send({
-      status: "success",
-      data: {
-        version: Version.version,
-        build_time_utc: Version.build_time_utc,
-      },
+      version: Version.version,
+      build_time_utc: Version.build_time_utc,
     });
   }
 }
