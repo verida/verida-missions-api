@@ -1,4 +1,4 @@
-export * from "./AlreadyExistsError";
+export * from "./AlreadyRegisteredError";
 export * from "./NotEnoughXpPointsError";
 export * from "./NotionError";
 export * from "./TermsNotAcceptedError";

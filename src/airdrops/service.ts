@@ -5,12 +5,12 @@ import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
 import { AIRDROP_1_CUTOFF_DATE, AIRDROP_1_MIN_XP_POINTS } from "./constants";
 import {
-  AlreadyExistsError,
+  AlreadyRegisteredError,
   NotEnoughXpPointsError,
   NotionError,
   TermsNotAcceptedError,
 } from "./errors";
-import { Airdrop1SubmitProofDto } from "./types";
+import { Airdrop1RegistrationDto } from "./types";
 import { getCountryFromIp, validateCountry } from "./utils";
 
 export class Service {
@@ -27,12 +27,12 @@ export class Service {
   }
 
   /**
-   * Check a proof for the airdrop 1 already exists. Does not return the result, to prevent data leaks.
+   * Check a registration for the airdrop 1 already exists. Does not return the result, to prevent data leaks.
    *
    * @param did the DID the proof has been submitted for.
    * @returns a boolean indicating whether the proof has already been submitted.
    */
-  async checkAirdrop1ProofExist(did: string): Promise<boolean> {
+  async checkAirdrop1RegistrationExist(did: string): Promise<boolean> {
     try {
       const result = await this.notionClient.databases.query({
         database_id: config.AIRDROP_1_NOTION_DB_ID,
@@ -58,21 +58,21 @@ export class Service {
   }
 
   /**
-   * Sumbit a proof for the airdrop 1.
+   * Register for the airdrop 1.
    *
-   * @param submitProofDto the DTO of the proof.
+   * @param registrationDto the DTO of the registration.
    */
-  async submitAirdrop1Proof(
-    submitProofDto: Airdrop1SubmitProofDto
+  async registerAirdrop1(
+    registrationDto: Airdrop1RegistrationDto
   ): Promise<void> {
     const { activityProofs, did, profile, ipAddress, termsAccepted } =
-      submitProofDto;
+      registrationDto;
 
-    const alreadyExists = await this.checkAirdrop1ProofExist(did);
-    if (alreadyExists) {
-      throw new AlreadyExistsError(
-        "Proof already submitted",
-        "Proof already submitted"
+    const isRegistered = await this.checkAirdrop1RegistrationExist(did);
+    if (isRegistered) {
+      throw new AlreadyRegisteredError(
+        "Already registered",
+        "Already registered"
       );
     }
 
@@ -185,12 +185,12 @@ export class Service {
   }
 
   /**
-   * Check if a user is eligible for the airdrop 2. Does not return the result, to prevent data leaks.
+   * Check if a user is registered for the airdrop 2. Does not return the result, to prevent data leaks.
    *
    * @param wallet the wallet address of the user to check.
    * @returns a boolean indicating whether the user is eligible.
    */
-  async checkAirdrop2Eligibility(wallet: string): Promise<boolean> {
+  async checkAirdrop2RegistrationExist(wallet: string): Promise<boolean> {
     try {
       const result = await this.notionClient.databases.query({
         database_id: config.AIRDROP_2_NOTION_DB_ID,

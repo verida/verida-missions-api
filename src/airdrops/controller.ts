@@ -1,21 +1,21 @@
 import { Request, Response } from "express";
 import { BadRequestError, ErrorResponse } from "../common";
 import {
-  AlreadyExistsError,
+  AlreadyRegisteredError,
   NotEnoughXpPointsError,
   TermsNotAcceptedError,
   UnauthorizedCountryError,
 } from "./errors";
 import { Service } from "./service";
 import {
-  extractAirdrop1SubmitProofDtoFromRequest,
+  extractAirdrop1RegistrationDtoFromRequest,
   extractDidFromRequestParams,
   extractWalletFromRequestParams,
 } from "./utils";
 import {
-  Airdrop1CheckProofExistSuccessResponse,
-  Airdrop1SubmitProofSuccessResponse,
-  Airdrop2CheckEligibilitySuccessResponse,
+  Airdrop1CheckSuccessResponse,
+  Airdrop1RegisterSuccessResponse,
+  Airdrop2CheckSuccessResponse,
 } from "./types";
 
 export class ControllerV1 {
@@ -28,24 +28,26 @@ export class ControllerV1 {
   // MARK: Airdrop 1: Early adopters of Verida Missions
 
   /**
-   * Check if a proof for the airdrop 1 has already been submitted for a given did
+   * Check if a registration for the airdrop 1 has already been submitted for a given did
    *
    * @param req The Express request object
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1CheckProofExist(
+  async airdrop1Check(
     req: Request,
-    res: Response<Airdrop1CheckProofExistSuccessResponse | ErrorResponse>
+    res: Response<Airdrop1CheckSuccessResponse | ErrorResponse>
   ) {
     try {
       const did = extractDidFromRequestParams(req);
 
-      const exists = await this.service.checkAirdrop1ProofExist(did);
+      const isRegistered =
+        await this.service.checkAirdrop1RegistrationExist(did);
 
       return res.status(200).send({
         status: "success",
-        exists,
+        isRegistered,
+        exists: isRegistered,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
@@ -64,20 +66,20 @@ export class ControllerV1 {
   }
 
   /**
-   * Submit a proof for the airdrop 1
+   * Register for the airdrop 1
    *
    * @param req The Express request object
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1SubmitProof(
+  async airdrop1Register(
     req: Request,
-    res: Response<Airdrop1SubmitProofSuccessResponse | ErrorResponse>
+    res: Response<Airdrop1RegisterSuccessResponse | ErrorResponse>
   ) {
     try {
-      const submitProofDto = extractAirdrop1SubmitProofDtoFromRequest(req);
+      const registrationDto = extractAirdrop1RegistrationDtoFromRequest(req);
 
-      await this.service.submitAirdrop1Proof(submitProofDto);
+      await this.service.registerAirdrop1(registrationDto);
 
       return res.status(201).send({
         status: "success",
@@ -94,7 +96,7 @@ export class ControllerV1 {
       }
 
       if (
-        error instanceof AlreadyExistsError ||
+        error instanceof AlreadyRegisteredError ||
         error instanceof NotEnoughXpPointsError ||
         error instanceof TermsNotAcceptedError ||
         error instanceof UnauthorizedCountryError
@@ -126,18 +128,20 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop2CheckEligibility(
+  async airdrop2Check(
     req: Request,
-    res: Response<Airdrop2CheckEligibilitySuccessResponse | ErrorResponse>
+    res: Response<Airdrop2CheckSuccessResponse | ErrorResponse>
   ) {
     try {
       const wallet = extractWalletFromRequestParams(req);
 
-      const isEligible = await this.service.checkAirdrop2Eligibility(wallet);
+      const isRegistered =
+        await this.service.checkAirdrop2RegistrationExist(wallet);
 
       return res.status(200).send({
         status: "success",
-        isEligible,
+        isRegistered,
+        isEligible: isRegistered,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {

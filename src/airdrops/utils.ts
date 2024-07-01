@@ -7,8 +7,8 @@ import {
 } from "../common";
 import { BLOCKED_COUNTRIES } from "./constants";
 import { UnauthorizedCountryError } from "./errors";
-import { Airdrop1SubmitProofDtoSchema } from "./schemas";
-import { Airdrop1SubmitProofDto } from "./types";
+import { Airdrop1RegistrationDtoSchema } from "./schemas";
+import { Airdrop1RegistrationDto } from "./types";
 
 export function extractDidFromRequestParams(req: Request): string {
   const did = req.params.did;
@@ -32,17 +32,17 @@ export function extractWalletFromRequestParams(req: Request): string {
   throw new BadRequestError("Invalid wallet parameter in request");
 }
 
-export function extractAirdrop1SubmitProofDtoFromRequest(
+export function extractAirdrop1RegistrationDtoFromRequest(
   req: Request
-): Airdrop1SubmitProofDto {
-  let submitProofDto: Airdrop1SubmitProofDto;
+): Airdrop1RegistrationDto {
+  let registrationDto: Airdrop1RegistrationDto;
   try {
     const ipAddress = req.socket.remoteAddress;
     // When developing locally, as 127.x.x.x is a local reserved range the IP checker won't resturn any result.
     // To test, hardcode a valid IP address from a country you want to check
 
     // Validate the DTO against the schema
-    submitProofDto = Airdrop1SubmitProofDtoSchema.parse({
+    registrationDto = Airdrop1RegistrationDtoSchema.parse({
       ...req.body,
       ipAddress,
     });
@@ -55,7 +55,7 @@ export function extractAirdrop1SubmitProofDtoFromRequest(
     throw new BadRequestError(`Validation error`);
   }
 
-  return submitProofDto;
+  return registrationDto;
 }
 
 export async function getCountryFromIp(
