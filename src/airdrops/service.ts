@@ -7,10 +7,11 @@ import { AIRDROP_1_CUTOFF_DATE, AIRDROP_1_MIN_XP_POINTS } from "./constants";
 import {
   AlreadyRegisteredError,
   NotEnoughXpPointsError,
+  NotRegisteredError,
   NotionError,
   TermsNotAcceptedError,
 } from "./errors";
-import { Airdrop1RegistrationDto } from "./types";
+import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
 import { getCountryFromIp, validateCountry } from "./utils";
 
 export class Service {
@@ -182,6 +183,43 @@ export class Service {
         cause: error,
       });
     }
+  }
+
+  /**
+   * Claim the airdrop 1.
+   *
+   * @param claimDto the DTO for the claim
+   */
+  async claimAirdrop1(claimDto: Airdrop1ClaimDto): Promise<void> {
+    const { did, termsAccepted, ipAddress, profile } = claimDto;
+
+    const isRegistered = await this.checkAirdrop1RegistrationExist(did);
+    if (!isRegistered) {
+      throw new NotRegisteredError("Not registered", "Not registered");
+    }
+
+    //  ----- Terms and Conditions -----
+
+    if (!termsAccepted) {
+      throw new TermsNotAcceptedError();
+    }
+
+    //  ----- Country -----
+
+    // Check country fromn profile
+    validateCountry(profile.country); // Throw an error if invalid
+
+    // Check country from user's location
+    const requesterCountry = ipAddress
+      ? await getCountryFromIp(ipAddress)
+      : undefined;
+    validateCountry(requesterCountry); // Throw an error if invalid
+
+    // TODO: Check address and address signature
+
+    // TODO: To implement
+
+    throw new Error("Not implemented");
   }
 
   /**

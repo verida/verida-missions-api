@@ -30,6 +30,8 @@ routerV1.post("/1/proofs", (req, res) =>
   controllerV1.airdrop1Register(req, res)
 );
 
+routerV1.post("/1/claim", (req, res) => controllerV1.airdrop1Claim(req, res));
+
 // Airdrop 2: Galxe and Zealy participants
 
 routerV1.get("/2/check/:wallet", (req, res) =>

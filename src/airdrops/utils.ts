@@ -7,8 +7,11 @@ import {
 } from "../common";
 import { BLOCKED_COUNTRIES } from "./constants";
 import { UnauthorizedCountryError } from "./errors";
-import { Airdrop1RegistrationDtoSchema } from "./schemas";
-import { Airdrop1RegistrationDto } from "./types";
+import {
+  Airdrop1ClaimDtoSchema,
+  Airdrop1RegistrationDtoSchema,
+} from "./schemas";
+import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
 
 export function extractDidFromRequestParams(req: Request): string {
   const did = req.params.did;
@@ -56,6 +59,32 @@ export function extractAirdrop1RegistrationDtoFromRequest(
   }
 
   return registrationDto;
+}
+
+export function extractAirdrop1ClaimDtoFromRequest(
+  req: Request
+): Airdrop1ClaimDto {
+  let claimDto: Airdrop1ClaimDto;
+  try {
+    const ipAddress = req.socket.remoteAddress;
+    // When developing locally, as 127.x.x.x is a local reserved range the IP checker won't resturn any result.
+    // To test, hardcode a valid IP address from a country you want to check
+
+    // Validate the DTO against the schema
+    claimDto = Airdrop1ClaimDtoSchema.parse({
+      ...req.body,
+      ipAddress,
+    });
+  } catch (error) {
+    // Catching the error here to re-throw a more appropriate message than the Zod one
+    if (error instanceof ZodError) {
+      const message = error.issues.map((issue) => issue.message).join(", ");
+      throw new BadRequestError(`Validation error: ${message}`);
+    }
+    throw new BadRequestError(`Validation error`);
+  }
+
+  return claimDto;
 }
 
 export async function getCountryFromIp(
