@@ -5,6 +5,7 @@ import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
 import {
   AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+  AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
   AIRDROP_1_CUTOFF_DATE,
   AIRDROP_1_MIN_XP_POINTS,
 } from "./constants";
@@ -56,6 +57,7 @@ export class Service {
     return {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
+      claimableTokenAmount: AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
     };
   }
 
