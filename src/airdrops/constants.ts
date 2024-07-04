@@ -23,3 +23,7 @@ export const BLOCKED_COUNTRIES = [
   "Sudan",
   "Iraq",
 ];
+
+// May use a generic message for all airdrops but using specific variables
+export const AIRDROP_1_ADDRESS_SIGNED_MESSAGE =
+  "I am the owner of this address for the Verida Airdrops";

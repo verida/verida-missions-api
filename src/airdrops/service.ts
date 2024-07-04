@@ -3,7 +3,11 @@ import { Client as VeridaClient } from "@verida/client-ts";
 import { isPromiseFulfilled } from "../common";
 import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
-import { AIRDROP_1_CUTOFF_DATE, AIRDROP_1_MIN_XP_POINTS } from "./constants";
+import {
+  AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+  AIRDROP_1_CUTOFF_DATE,
+  AIRDROP_1_MIN_XP_POINTS,
+} from "./constants";
 import {
   AlreadyRegisteredError,
   NotEnoughXpPointsError,
@@ -12,7 +16,7 @@ import {
   TermsNotAcceptedError,
 } from "./errors";
 import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
-import { getCountryFromIp, validateCountry } from "./utils";
+import { getCountryFromIp, validateCountry, validateEVMAddress } from "./utils";
 
 export class Service {
   private notionClient: NotionClient;
@@ -191,7 +195,14 @@ export class Service {
    * @param claimDto the DTO for the claim
    */
   async claimAirdrop1(claimDto: Airdrop1ClaimDto): Promise<void> {
-    const { did, termsAccepted, ipAddress, profile } = claimDto;
+    const {
+      did,
+      termsAccepted,
+      ipAddress,
+      profile,
+      userEvmAddress,
+      userEvmAddressSignature,
+    } = claimDto;
 
     const isRegistered = await this.checkAirdrop1RegistrationExist(did);
     if (!isRegistered) {
@@ -215,7 +226,15 @@ export class Service {
       : undefined;
     validateCountry(requesterCountry); // Throw an error if invalid
 
-    // TODO: Check address and address signature
+    //  ----- User's EVM address -----
+
+    validateEVMAddress({
+      address: userEvmAddress,
+      signedMessage: userEvmAddressSignature,
+      clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+    });
+
+    //  ----- Transfer tokens -----
 
     // TODO: To implement
 

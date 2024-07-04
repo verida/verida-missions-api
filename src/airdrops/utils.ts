@@ -12,6 +12,7 @@ import {
   Airdrop1RegistrationDtoSchema,
 } from "./schemas";
 import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
+import { verifyMessage } from "ethers";
 
 export function extractDidFromRequestParams(req: Request): string {
   const did = req.params.did;
@@ -121,5 +122,25 @@ export function validateCountry(country?: string): void {
   const isUnauthorized = BLOCKED_COUNTRIES.includes(country);
   if (isUnauthorized) {
     throw new UnauthorizedCountryError();
+  }
+}
+
+export function validateEVMAddress({
+  address,
+  signedMessage,
+  clearMessage,
+}: {
+  address: string;
+  signedMessage: string;
+  clearMessage: string;
+}): void {
+  const isValid = isValidEvmAddress(address);
+  if (!isValid) {
+    throw new BadRequestError("Validation error: Invalid EVM address");
+  }
+
+  const resolvedAddress = verifyMessage(clearMessage, signedMessage);
+  if (resolvedAddress !== address) {
+    throw new BadRequestError("Validation error: Invalid signature");
   }
 }
