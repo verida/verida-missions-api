@@ -51,6 +51,7 @@ export class ControllerV1 {
         status: "success",
         isRegistered: status.isRegistered,
         isClaimed: status.isClaimed,
+        claimableTokenAmount: status.claimableTokenAmount,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
