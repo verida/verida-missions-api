@@ -1,6 +1,6 @@
+export * from "./AlreadyClaimedError";
 export * from "./AlreadyRegisteredError";
 export * from "./NotEnoughXpPointsError";
-export * from "./NotionError";
 export * from "./NotRegisteredError";
 export * from "./TermsNotAcceptedError";
 export * from "./UnauthorizedCountryError";

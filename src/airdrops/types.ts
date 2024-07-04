@@ -4,18 +4,32 @@ import {
   Airdrop1RegistrationDtoSchema,
 } from "./schemas";
 
+export type Airdrop1Record = {
+  id: string;
+  did: string;
+  country: string;
+  termsAccepted: boolean;
+  totalXPPoints: number;
+  totalXPPointsBeforeCutOff: number;
+  claimed: boolean;
+};
+
+export type Airdrop1UserStatus = {
+  isRegistered: boolean;
+  isClaimed: boolean;
+};
+
 export type Airdrop1RegistrationDto = z.infer<
   typeof Airdrop1RegistrationDtoSchema
 >;
 
 export type Airdrop1CheckSuccessResponse = {
   status: "success";
-  isRegistered: boolean;
   /**
    * @deprecated use isRegistered instead
    */
   exists: boolean;
-};
+} & Airdrop1UserStatus;
 
 export type Airdrop1RegisterSuccessResponse = {
   status: "success";

@@ -11,8 +11,20 @@ import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
 } from "./schemas";
-import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
+import {
+  Airdrop1ClaimDto,
+  Airdrop1Record,
+  Airdrop1RegistrationDto,
+} from "./types";
 import { verifyMessage } from "ethers";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import {
+  NotionDatabaseProperty,
+  getValueFromNotionCheckboxProperty,
+  getValueFromNotionNumberProperty,
+  getValueFromNotionRichTextProperty,
+  getValueFromNotionTitleProperty,
+} from "../notion";
 
 export function extractDidFromRequestParams(req: Request): string {
   const did = req.params.did;
@@ -143,4 +155,31 @@ export function validateEVMAddress({
   if (resolvedAddress !== address) {
     throw new BadRequestError("Validation error: Invalid signature");
   }
+}
+
+export function transformNotionRecordToAirdrop1(
+  record: DatabaseObjectResponse
+): Airdrop1Record {
+  // HACK: Surprisingly the Notion library types don't correspond to the
+  // actual data structure returned by the API, so we need to cast it
+  const properties = record.properties as unknown as Record<
+    string,
+    NotionDatabaseProperty
+  >;
+
+  return {
+    id: record.id,
+    did: getValueFromNotionTitleProperty(properties["DID"]),
+    country: getValueFromNotionRichTextProperty(properties["Country"]),
+    termsAccepted: getValueFromNotionCheckboxProperty(
+      properties["Terms accepted"]
+    ),
+    totalXPPoints: getValueFromNotionNumberProperty(
+      properties["Total XP points"]
+    ),
+    totalXPPointsBeforeCutOff: getValueFromNotionNumberProperty(
+      properties["XP points before cut-off"]
+    ),
+    claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
+  };
 }

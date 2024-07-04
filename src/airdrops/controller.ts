@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { BadRequestError, ErrorResponse } from "../common";
 import {
+  AlreadyClaimedError,
   AlreadyRegisteredError,
   NotEnoughXpPointsError,
   NotRegisteredError,
@@ -31,7 +32,7 @@ export class ControllerV1 {
   // MARK: Airdrop 1: Early adopters of Verida Missions
 
   /**
-   * Check if a registration for the airdrop 1 has already been submitted for a given did
+   * Check the status of the airdrop 1 for a given DID.
    *
    * @param req The Express request object
    * @param res The Express response object
@@ -44,13 +45,13 @@ export class ControllerV1 {
     try {
       const did = extractDidFromRequestParams(req);
 
-      const isRegistered =
-        await this.service.checkAirdrop1RegistrationExist(did);
+      const status = await this.service.getAirdrop1Status(did);
 
       return res.status(200).send({
         status: "success",
-        isRegistered,
-        exists: isRegistered,
+        isRegistered: status.isRegistered,
+        exists: status.isRegistered,
+        isClaimed: status.isClaimed,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
@@ -98,8 +99,15 @@ export class ControllerV1 {
         });
       }
 
+      if (error instanceof AlreadyRegisteredError) {
+        return res.status(403).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
       if (
-        error instanceof AlreadyRegisteredError ||
         error instanceof NotEnoughXpPointsError ||
         error instanceof TermsNotAcceptedError ||
         error instanceof UnauthorizedCountryError
@@ -149,8 +157,23 @@ export class ControllerV1 {
         });
       }
 
+      if (error instanceof NotRegisteredError) {
+        return res.status(403).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (error instanceof AlreadyClaimedError) {
+        return res.status(403).send({
+          status: "error",
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
       if (
-        error instanceof NotRegisteredError ||
         error instanceof TermsNotAcceptedError ||
         error instanceof UnauthorizedCountryError
       ) {

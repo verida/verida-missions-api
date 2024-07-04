@@ -9,14 +9,26 @@ import {
   AIRDROP_1_MIN_XP_POINTS,
 } from "./constants";
 import {
+  AlreadyClaimedError,
   AlreadyRegisteredError,
   NotEnoughXpPointsError,
   NotRegisteredError,
-  NotionError,
   TermsNotAcceptedError,
 } from "./errors";
-import { Airdrop1ClaimDto, Airdrop1RegistrationDto } from "./types";
-import { getCountryFromIp, validateCountry, validateEVMAddress } from "./utils";
+import {
+  Airdrop1ClaimDto,
+  Airdrop1Record,
+  Airdrop1RegistrationDto,
+  Airdrop1UserStatus,
+} from "./types";
+import {
+  getCountryFromIp,
+  transformNotionRecordToAirdrop1,
+  validateCountry,
+  validateEVMAddress,
+} from "./utils";
+import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { NotionError } from "../notion";
 
 export class Service {
   private notionClient: NotionClient;
@@ -32,12 +44,24 @@ export class Service {
   }
 
   /**
-   * Check a registration for the airdrop 1 already exists. Does not return the result, to prevent data leaks.
+   * Get the status of a user for the airdrop 1. Does not return detailed
+   * result, to prevent data leaks.
    *
    * @param did the DID the proof has been submitted for.
-   * @returns a boolean indicating whether the proof has already been submitted.
+   * @returns the status for the user.
    */
-  async checkAirdrop1RegistrationExist(did: string): Promise<boolean> {
+  async getAirdrop1Status(did: string): Promise<Airdrop1UserStatus> {
+    const record = await this.getAirdrop1Record(did);
+
+    return {
+      isRegistered: !!record, // If the record exists, the user is registered
+      isClaimed: record?.claimed ?? false,
+    };
+  }
+
+  private async getAirdrop1Record(
+    did: string
+  ): Promise<Airdrop1Record | undefined> {
     try {
       const result = await this.notionClient.databases.query({
         database_id: config.AIRDROP_1_NOTION_DB_ID,
@@ -53,8 +77,16 @@ export class Service {
         },
       });
 
-      // Do not return the result, to prevent data leaks
-      return result.results.length > 0;
+      if (result.results.length === 0) {
+        return undefined;
+      }
+
+      const record = result.results[0] as DatabaseObjectResponse;
+
+      const airdrop1Record: Airdrop1Record =
+        transformNotionRecordToAirdrop1(record);
+
+      return airdrop1Record;
     } catch (error) {
       throw new NotionError("Error while querying the database", undefined, {
         cause: error,
@@ -73,12 +105,9 @@ export class Service {
     const { activityProofs, did, profile, ipAddress, termsAccepted } =
       registrationDto;
 
-    const isRegistered = await this.checkAirdrop1RegistrationExist(did);
+    const { isRegistered } = await this.getAirdrop1Status(did);
     if (isRegistered) {
-      throw new AlreadyRegisteredError(
-        "Already registered",
-        "Already registered"
-      );
+      throw new AlreadyRegisteredError();
     }
 
     //  ----- Terms and Conditions -----
@@ -204,9 +233,14 @@ export class Service {
       userEvmAddressSignature,
     } = claimDto;
 
-    const isRegistered = await this.checkAirdrop1RegistrationExist(did);
-    if (!isRegistered) {
-      throw new NotRegisteredError("Not registered", "Not registered");
+    const airdrop1Record = await this.getAirdrop1Record(did);
+
+    if (!airdrop1Record) {
+      throw new NotRegisteredError();
+    }
+
+    if (airdrop1Record.claimed) {
+      throw new AlreadyClaimedError();
     }
 
     //  ----- Terms and Conditions -----
@@ -235,6 +269,10 @@ export class Service {
     });
 
     //  ----- Transfer tokens -----
+
+    // TODO: To implement
+
+    // ----- Update the Notion record -----
 
     // TODO: To implement
 
