@@ -50,7 +50,6 @@ export class ControllerV1 {
       return res.status(200).send({
         status: "success",
         isRegistered: status.isRegistered,
-        exists: status.isRegistered,
         isClaimed: status.isClaimed,
       });
     } catch (error) {
