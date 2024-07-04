@@ -57,7 +57,8 @@ export class Service {
     return {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
-      claimableTokenAmount: AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
+      claimableTokenAmount:
+        !!record && !record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
     };
   }
 

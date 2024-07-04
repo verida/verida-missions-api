@@ -17,7 +17,7 @@ export type Airdrop1Record = {
 export type Airdrop1UserStatus = {
   isRegistered: boolean;
   isClaimed: boolean;
-  claimableTokenAmount: number;
+  claimableTokenAmount: number | null;
 };
 
 export type Airdrop1RegistrationDto = z.infer<
