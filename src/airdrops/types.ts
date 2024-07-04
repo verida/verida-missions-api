@@ -18,6 +18,7 @@ export type Airdrop1UserStatus = {
   isRegistered: boolean;
   isClaimed: boolean;
   claimableTokenAmount: number | null;
+  claimedTokenAmount: number | null;
 };
 
 export type Airdrop1RegistrationDto = z.infer<
@@ -34,10 +35,14 @@ export type Airdrop1RegisterSuccessResponse = {
 
 export type Airdrop1ClaimDto = z.infer<typeof Airdrop1ClaimDtoSchema>;
 
+export type Airdrop1ClaimSuccessResult = {
+  transactionExplorerUrl: string;
+  claimedTokenAmount: number;
+};
+
 export type Airdrop1ClaimSuccessResponse = {
   status: "success";
-  // TODO: Add transaction hash is possible
-};
+} & Airdrop1ClaimSuccessResult;
 
 export type Airdrop2CheckSuccessResponse = {
   status: "success";

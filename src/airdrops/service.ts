@@ -18,6 +18,7 @@ import {
 } from "./errors";
 import {
   Airdrop1ClaimDto,
+  Airdrop1ClaimSuccessResult,
   Airdrop1Record,
   Airdrop1RegistrationDto,
   Airdrop1UserStatus,
@@ -59,6 +60,8 @@ export class Service {
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
         !!record && !record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
+      claimedTokenAmount:
+        !!record && record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
     };
   }
 
@@ -274,6 +277,11 @@ export class Service {
     //  ----- Transfer tokens -----
 
     // TODO: To implement
+
+    return {
+      transactionExplorerUrl: "https://polygonscan.com/",
+      claimedTokenAmount: AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
+    };
 
     // ----- Update the Notion record -----
 

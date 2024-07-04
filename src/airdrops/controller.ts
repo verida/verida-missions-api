@@ -52,6 +52,7 @@ export class ControllerV1 {
         isRegistered: status.isRegistered,
         isClaimed: status.isClaimed,
         claimableTokenAmount: status.claimableTokenAmount,
+        claimedTokenAmount: status.claimedTokenAmount,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
@@ -141,10 +142,12 @@ export class ControllerV1 {
     try {
       const claimDto = extractAirdrop1ClaimDtoFromRequest(req);
 
-      await this.service.claimAirdrop1(claimDto);
+      const result = await this.service.claimAirdrop1(claimDto);
 
       return res.status(201).send({
         status: "success",
+        claimedTokenAmount: result.claimedTokenAmount,
+        transactionExplorerUrl: result.transactionExplorerUrl,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
