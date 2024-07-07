@@ -1,6 +1,6 @@
 import z from "zod";
 import {
-  // EVM_ADDRESS_REGEXP,
+  EVM_ADDRESS_REGEXP,
   UserProfileInfoSchema,
   VERIDA_DID_REGEXP,
 } from "../common";
@@ -19,7 +19,6 @@ export const Airdrop1ClaimDtoSchema = z.object({
   termsAccepted: z.boolean().default(false),
   userEvmAddress: z
     .string()
-    // .regex(EVM_ADDRESS_REGEXP, { message: "Invalid EVM address" })
-    .optional(),
-  userEvmAddressSignature: z.string().optional(),
+    .regex(EVM_ADDRESS_REGEXP, { message: "Invalid EVM address" }),
+  userEvmAddressSignature: z.string(),
 });

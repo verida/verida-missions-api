@@ -173,17 +173,3 @@ export function transformNotionRecordToAirdrop1(
     claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
   };
 }
-
-export function getBlockchainExplorerTransactionUrl(
-  txHash: string,
-  network: "polygon-mainnet" | "polygon-amoy" // TODO: Use CAIP-2 and constants
-): string {
-  switch (network) {
-    case "polygon-mainnet":
-      return `https://polygonscan.com/tx/${txHash}`;
-    case "polygon-amoy":
-      return `https://amoy.polygonscan.com/tx/${txHash}`;
-    default:
-      return "";
-  }
-}
