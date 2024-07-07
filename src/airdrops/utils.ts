@@ -5,7 +5,10 @@ import {
   BadRequestError,
   isValidEvmAddress,
 } from "../common";
-import { BLOCKED_COUNTRIES } from "./constants";
+import {
+  AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
+  BLOCKED_COUNTRIES,
+} from "./constants";
 import { UnauthorizedCountryError } from "./errors";
 import {
   Airdrop1ClaimDtoSchema,
@@ -179,4 +182,8 @@ export function transformNotionRecordToAirdrop1(
       properties["Transaction URL"]
     ),
   };
+}
+
+export function getAirdrop1ClaimableTokenAmount(): number {
+  return AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT;
 }

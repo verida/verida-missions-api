@@ -5,7 +5,6 @@ import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
 import {
   AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
-  AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
   AIRDROP_1_CUTOFF_DATE,
   AIRDROP_1_MIN_XP_POINTS,
 } from "./constants";
@@ -24,6 +23,7 @@ import {
   Airdrop1UserStatus,
 } from "./types";
 import {
+  getAirdrop1ClaimableTokenAmount,
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
   validateCountry,
@@ -64,7 +64,7 @@ export class Service {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        !!record && !record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
+        !!record && !record.claimed ? getAirdrop1ClaimableTokenAmount() : null,
       claimedTokenAmount:
         !!record && record.claimed ? record.claimedAmount : null,
       claimTransactionUrl: record?.claimTransactionUrl ?? null,
@@ -265,7 +265,7 @@ export class Service {
 
     const blockchain = POLYGON_MAINNET_CHAIN_ID; // TODO: get from config
 
-    const claimableTokenAmount = AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT;
+    const claimableTokenAmount = getAirdrop1ClaimableTokenAmount();
 
     const transactionHash = await transferVdaTokens({
       to: userEvmAddress,
