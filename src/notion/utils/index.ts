@@ -12,22 +12,22 @@ export function getValueFromNotionCheckboxProperty(
 
 export function getValueFromNotionNumberProperty(
   property: NotionDatabaseProperty
-): number {
+): number | null {
   if (property.type !== "number") {
     throw new NotionError(undefined, "Invalid property type");
   }
-  return property.number;
+  return property.number ?? null;
 }
 
 export function getValueFromNotionRichTextProperty(
   property: NotionDatabaseProperty
-): string {
+): string | null {
   if (property.type !== "rich_text") {
     throw new NotionError(undefined, "Invalid property type");
   }
 
   if (property.rich_text.length === 0) {
-    return "";
+    return null;
   }
 
   return property.rich_text[0].plain_text;
@@ -45,4 +45,13 @@ export function getValueFromNotionTitleProperty(
   }
 
   return property.title[0].plain_text;
+}
+
+export function getValueFromNotionUrlProperty(
+  property: NotionDatabaseProperty
+): string | null {
+  if (property.type !== "url") {
+    throw new NotionError(undefined, "Invalid property type");
+  }
+  return property.url || null;
 }

@@ -24,6 +24,7 @@ import {
   getValueFromNotionNumberProperty,
   getValueFromNotionRichTextProperty,
   getValueFromNotionTitleProperty,
+  getValueFromNotionUrlProperty,
 } from "../notion";
 
 export function extractDidFromRequestParams(req: Request): string {
@@ -171,5 +172,11 @@ export function transformNotionRecordToAirdrop1(
       properties["XP points before cut-off"]
     ),
     claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
+    claimedAmount: getValueFromNotionNumberProperty(
+      properties["Claimed amount"]
+    ),
+    claimTransactionUrl: getValueFromNotionUrlProperty(
+      properties["Transaction URL"]
+    ),
   };
 }

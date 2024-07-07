@@ -53,6 +53,7 @@ export class ControllerV1 {
         isClaimed: status.isClaimed,
         claimableTokenAmount: status.claimableTokenAmount,
         claimedTokenAmount: status.claimedTokenAmount,
+        claimTransactionUrl: status.claimTransactionUrl,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {

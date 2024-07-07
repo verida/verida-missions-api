@@ -22,8 +22,14 @@ export type NotionNumberDatabaseProperty = {
   number: number;
 };
 
+export type NotionUrlDatabaseProperty = {
+  type: "url";
+  url: string;
+};
+
 export type NotionDatabaseProperty =
   | NotionTitleDatabaseProperty
   | NotionRichTextDatabaseProperty
   | NotionCheckboxDatabaseProperty
-  | NotionNumberDatabaseProperty;
+  | NotionNumberDatabaseProperty
+  | NotionUrlDatabaseProperty;

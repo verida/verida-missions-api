@@ -7,11 +7,13 @@ import {
 export type Airdrop1Record = {
   id: string;
   did: string;
-  country: string;
+  country: string | null;
   termsAccepted: boolean;
-  totalXPPoints: number;
-  totalXPPointsBeforeCutOff: number;
+  totalXPPoints: number | null;
+  totalXPPointsBeforeCutOff: number | null;
   claimed: boolean;
+  claimedAmount: number | null;
+  claimTransactionUrl: string | null;
 };
 
 export type Airdrop1UserStatus = {
@@ -19,6 +21,7 @@ export type Airdrop1UserStatus = {
   isClaimed: boolean;
   claimableTokenAmount: number | null;
   claimedTokenAmount: number | null;
+  claimTransactionUrl: string | null;
 };
 
 export type Airdrop1RegistrationDto = z.infer<

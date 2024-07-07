@@ -66,7 +66,8 @@ export class Service {
       claimableTokenAmount:
         !!record && !record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
       claimedTokenAmount:
-        !!record && record.claimed ? AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT : null,
+        !!record && record.claimed ? record.claimedAmount : null,
+      claimTransactionUrl: record?.claimTransactionUrl ?? null,
     };
   }
 
@@ -282,12 +283,18 @@ export class Service {
       await this.notionClient.pages.update({
         page_id: airdrop1Record.id,
         properties: {
-          Claimed: {
+          "Claimed": {
             type: "checkbox",
             checkbox: true,
           },
-          // TODO: Save the claimed token amount
-          // TODO: Save the transaction hash
+          "Claimed amount": {
+            type: "number",
+            number: claimableTokenAmount,
+          },
+          "Transaction URL": {
+            type: "url",
+            url: transactionExplorerUrl,
+          },
         },
       });
     } catch (error) {
