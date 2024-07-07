@@ -51,17 +51,18 @@ export function extractWalletFromRequestParams(req: Request): string {
 export function extractAirdrop1RegistrationDtoFromRequest(
   req: Request
 ): Airdrop1RegistrationDto {
-  let registrationDto: Airdrop1RegistrationDto;
   try {
     const ipAddress = req.socket.remoteAddress;
     // When developing locally, as 127.x.x.x is a local reserved range the IP checker won't resturn any result.
     // To test, hardcode a valid IP address from a country you want to check
 
     // Validate the DTO against the schema
-    registrationDto = Airdrop1RegistrationDtoSchema.parse({
+    const registrationDto = Airdrop1RegistrationDtoSchema.parse({
       ...req.body,
       ipAddress,
     });
+
+    return registrationDto;
   } catch (error) {
     // Catching the error here to re-throw a more appropriate message than the Zod one
     if (error instanceof ZodError) {
@@ -70,24 +71,15 @@ export function extractAirdrop1RegistrationDtoFromRequest(
     }
     throw new BadRequestError(`Validation error`);
   }
-
-  return registrationDto;
 }
 
 export function extractAirdrop1ClaimDtoFromRequest(
   req: Request
 ): Airdrop1ClaimDto {
-  let claimDto: Airdrop1ClaimDto;
   try {
-    const ipAddress = req.socket.remoteAddress;
-    // When developing locally, as 127.x.x.x is a local reserved range the IP checker won't resturn any result.
-    // To test, hardcode a valid IP address from a country you want to check
-
     // Validate the DTO against the schema
-    claimDto = Airdrop1ClaimDtoSchema.parse({
-      ...req.body,
-      ipAddress,
-    });
+    const claimDto = Airdrop1ClaimDtoSchema.parse(req.body);
+    return claimDto;
   } catch (error) {
     // Catching the error here to re-throw a more appropriate message than the Zod one
     if (error instanceof ZodError) {
@@ -96,8 +88,6 @@ export function extractAirdrop1ClaimDtoFromRequest(
     }
     throw new BadRequestError(`Validation error`);
   }
-
-  return claimDto;
 }
 
 export async function getCountryFromIp(
@@ -182,4 +172,18 @@ export function transformNotionRecordToAirdrop1(
     ),
     claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
   };
+}
+
+export function getBlockchainExplorerTransactionUrl(
+  txHash: string,
+  network: "polygon-mainnet" | "polygon-amoy" // TODO: Use CAIP-2 and constants
+): string {
+  switch (network) {
+    case "polygon-mainnet":
+      return `https://polygonscan.com/tx/${txHash}`;
+    case "polygon-amoy":
+      return `https://amoy.polygonscan.com/tx/${txHash}`;
+    default:
+      return "";
+  }
 }

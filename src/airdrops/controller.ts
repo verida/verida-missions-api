@@ -160,29 +160,15 @@ export class ControllerV1 {
         });
       }
 
-      if (error instanceof NotRegisteredError) {
-        return res.status(403).send({
-          status: "error",
-          errorMessage: error.message,
-          errorUserMessage: error.userMessage,
-        });
-      }
-
-      if (error instanceof AlreadyClaimedError) {
-        return res.status(403).send({
-          status: "error",
-          errorMessage: error.message,
-          errorUserMessage: error.userMessage,
-        });
-      }
-
       if (
         error instanceof TermsNotAcceptedError ||
-        error instanceof UnauthorizedCountryError
+        error instanceof NotRegisteredError ||
+        error instanceof AlreadyClaimedError
       ) {
         return res.status(403).send({
           status: "error",
-          // Intentionally not sending the error details
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
         });
       }
 

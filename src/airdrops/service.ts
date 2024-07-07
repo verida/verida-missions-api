@@ -4,7 +4,7 @@ import { isPromiseFulfilled } from "../common";
 import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
 import {
-  AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+  // AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
   AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
   AIRDROP_1_CUTOFF_DATE,
   AIRDROP_1_MIN_XP_POINTS,
@@ -24,10 +24,11 @@ import {
   Airdrop1UserStatus,
 } from "./types";
 import {
+  getBlockchainExplorerTransactionUrl,
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
   validateCountry,
-  validateEVMAddress,
+  // validateEVMAddress,
 } from "./utils";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionError } from "../notion";
@@ -229,14 +230,14 @@ export class Service {
    *
    * @param claimDto the DTO for the claim
    */
-  async claimAirdrop1(claimDto: Airdrop1ClaimDto): Promise<void> {
+  async claimAirdrop1(
+    claimDto: Airdrop1ClaimDto
+  ): Promise<Airdrop1ClaimSuccessResult> {
     const {
       did,
       termsAccepted,
-      ipAddress,
-      profile,
-      userEvmAddress,
-      userEvmAddressSignature,
+      // userEvmAddress,
+      // userEvmAddressSignature
     } = claimDto;
 
     const airdrop1Record = await this.getAirdrop1Record(did);
@@ -255,39 +256,50 @@ export class Service {
       throw new TermsNotAcceptedError();
     }
 
-    //  ----- Country -----
-
-    // Check country fromn profile
-    validateCountry(profile.country); // Throw an error if invalid
-
-    // Check country from user's location
-    const requesterCountry = ipAddress
-      ? await getCountryFromIp(ipAddress)
-      : undefined;
-    validateCountry(requesterCountry); // Throw an error if invalid
-
     //  ----- User's EVM address -----
 
-    validateEVMAddress({
-      address: userEvmAddress,
-      signedMessage: userEvmAddressSignature,
-      clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
-    });
+    // validateEVMAddress({
+    //   address: userEvmAddress,
+    //   signedMessage: userEvmAddressSignature,
+    //   clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+    // });
 
     //  ----- Transfer tokens -----
 
     // TODO: To implement
 
-    return {
-      transactionExplorerUrl: "https://polygonscan.com/",
-      claimedTokenAmount: AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
-    };
+    const claimableTokenAmount = AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT;
+
+    const transactionHash = "";
+    const transactionExplorerUrl = getBlockchainExplorerTransactionUrl(
+      transactionHash,
+      "polygon-mainnet"
+    );
 
     // ----- Update the Notion record -----
 
-    // TODO: To implement
+    try {
+      await this.notionClient.pages.update({
+        page_id: airdrop1Record.id,
+        properties: {
+          Claimed: {
+            type: "checkbox",
+            checkbox: true,
+          },
+          // TODO: Save the claimed token amount
+          // TODO: Save the transaction hash
+        },
+      });
+    } catch (error) {
+      throw new NotionError("Error while updating a record", undefined, {
+        cause: error,
+      });
+    }
 
-    throw new Error("Not implemented");
+    return {
+      transactionExplorerUrl,
+      claimedTokenAmount: claimableTokenAmount,
+    };
   }
 
   /**
