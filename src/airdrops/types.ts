@@ -11,6 +11,7 @@ export type Airdrop1Record = {
   termsAccepted: boolean;
   totalXPPoints: number | null;
   totalXPPointsBeforeCutOff: number | null;
+  claimableAmount: number | null;
   claimed: boolean;
   claimedAmount: number | null;
   claimTransactionUrl: string | null;

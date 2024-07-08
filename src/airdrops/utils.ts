@@ -7,7 +7,6 @@ import {
 } from "../common";
 import {
   AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
-  AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
   BLOCKED_COUNTRIES,
 } from "./constants";
 import { InvalidEvmAddressError, UnauthorizedCountryError } from "./errors";
@@ -195,6 +194,9 @@ export function transformNotionRecordToAirdrop1(
     totalXPPointsBeforeCutOff: getValueFromNotionNumberProperty(
       properties["XP points before cut-off"]
     ),
+    claimableAmount: getValueFromNotionNumberProperty(
+      properties["Claimable token amount"]
+    ),
     claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
     claimedAmount: getValueFromNotionNumberProperty(
       properties["Claimed amount"]
@@ -203,8 +205,4 @@ export function transformNotionRecordToAirdrop1(
       properties["Transaction URL"]
     ),
   };
-}
-
-export function getAirdrop1ClaimableTokenAmount(): number {
-  return AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT;
 }

@@ -27,5 +27,3 @@ export const BLOCKED_COUNTRIES = [
 // May use a generic message for all airdrops but using specific variables
 export const AIRDROP_1_ADDRESS_SIGNED_MESSAGE =
   "I am the owner of this address for the Verida Airdrops";
-
-export const AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT = 10;

@@ -7,6 +7,7 @@ import { AIRDROP_1_CUTOFF_DATE, AIRDROP_1_MIN_XP_POINTS } from "./constants";
 import {
   AlreadyClaimedError,
   AlreadyRegisteredError,
+  InvalidClaimableTokenAmountError,
   NotEnoughXpPointsError,
   NotRegisteredError,
   TermsNotAcceptedError,
@@ -19,7 +20,6 @@ import {
   Airdrop1UserStatus,
 } from "./types";
 import {
-  getAirdrop1ClaimableTokenAmount,
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
   validateCountry,
@@ -58,7 +58,7 @@ export class Service {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        !!record && !record.claimed ? getAirdrop1ClaimableTokenAmount() : null,
+        !!record && !record.claimed ? record.claimableAmount : null,
       claimedTokenAmount:
         !!record && record.claimed ? record.claimedAmount : null,
       claimTransactionUrl: record?.claimTransactionUrl ?? null,
@@ -248,12 +248,22 @@ export class Service {
       throw new TermsNotAcceptedError();
     }
 
-    // Transfer tokens
-    const claimableTokenAmount = getAirdrop1ClaimableTokenAmount();
+    if (airdrop1Record.claimableAmount === null) {
+      throw new InvalidClaimableTokenAmountError(
+        "The claimable token amount is null"
+      );
+    }
 
+    if (airdrop1Record.claimableAmount <= 0) {
+      throw new InvalidClaimableTokenAmountError(
+        "The claimable token amount is negative or zero"
+      );
+    }
+
+    // Transfer tokens
     const transactionHash = await transferVdaTokens({
       to: userEvmAddress,
-      amount: claimableTokenAmount,
+      amount: airdrop1Record.claimableAmount,
     });
 
     const transactionExplorerUrl =
@@ -270,7 +280,7 @@ export class Service {
           },
           "Claimed amount": {
             type: "number",
-            number: claimableTokenAmount,
+            number: airdrop1Record.claimableAmount,
           },
           "Transaction URL": {
             type: "url",
@@ -286,7 +296,7 @@ export class Service {
 
     return {
       transactionExplorerUrl,
-      claimedTokenAmount: claimableTokenAmount,
+      claimedTokenAmount: airdrop1Record.claimableAmount,
     };
   }
 
