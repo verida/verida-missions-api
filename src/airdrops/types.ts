@@ -30,6 +30,10 @@ export type Airdrop1RegistrationDto = z.infer<
 
 export type Airdrop1CheckSuccessResponse = {
   status: "success";
+  /**
+   * @deprecated use isRegistered instead
+   */
+  exists: boolean;
 } & Airdrop1UserStatus;
 
 export type Airdrop1RegisterSuccessResponse = {

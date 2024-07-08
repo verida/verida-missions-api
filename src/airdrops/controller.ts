@@ -50,6 +50,7 @@ export class ControllerV1 {
 
       return res.status(200).send({
         status: "success",
+        exists: status.isRegistered,
         isRegistered: status.isRegistered,
         isClaimed: status.isClaimed,
         claimableTokenAmount: status.claimableTokenAmount,
