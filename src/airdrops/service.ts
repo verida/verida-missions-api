@@ -28,7 +28,6 @@ import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints
 import { NotionError } from "../notion";
 import {
   getBlockchainExplorerTransactionUrl,
-  POLYGON_MAINNET_CHAIN_ID,
   transferVdaTokens,
 } from "../blockchain";
 
@@ -250,21 +249,15 @@ export class Service {
     }
 
     // Transfer tokens
-
-    const blockchain = POLYGON_MAINNET_CHAIN_ID; // TODO: get from config
-
     const claimableTokenAmount = getAirdrop1ClaimableTokenAmount();
 
     const transactionHash = await transferVdaTokens({
       to: userEvmAddress,
       amount: claimableTokenAmount,
-      network: blockchain,
     });
 
-    const transactionExplorerUrl = getBlockchainExplorerTransactionUrl(
-      transactionHash,
-      blockchain
-    );
+    const transactionExplorerUrl =
+      getBlockchainExplorerTransactionUrl(transactionHash);
 
     // Update the Notion record
     try {
