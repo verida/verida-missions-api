@@ -6,10 +6,11 @@ import {
   isValidEvmAddress,
 } from "../common";
 import {
+  AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
   AIRDROP_1_CLAIMABLE_TOKEN_AMOUNT,
   BLOCKED_COUNTRIES,
 } from "./constants";
-import { UnauthorizedCountryError } from "./errors";
+import { InvalidEvmAddressError, UnauthorizedCountryError } from "./errors";
 import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
@@ -83,6 +84,19 @@ export function extractAirdrop1ClaimDtoFromRequest(
   try {
     // Validate the DTO against the schema
     const claimDto = Airdrop1ClaimDtoSchema.parse(req.body);
+
+    const { isAddressValid, isSignatureValid } = validateEVMAddressAndSignature(
+      {
+        address: claimDto.userEvmAddress,
+        signedMessage: claimDto.userEvmAddressSignature,
+        clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+      }
+    );
+
+    if (!isAddressValid || !isSignatureValid) {
+      throw new InvalidEvmAddressError();
+    }
+
     return claimDto;
   } catch (error) {
     // Catching the error here to re-throw a more appropriate message than the Zod one
@@ -90,6 +104,11 @@ export function extractAirdrop1ClaimDtoFromRequest(
       const message = error.issues.map((issue) => issue.message).join(", ");
       throw new BadRequestError(`Validation error: ${message}`);
     }
+
+    if (error instanceof InvalidEvmAddressError) {
+      throw error;
+    }
+
     throw new BadRequestError(`Validation error`);
   }
 }
@@ -131,7 +150,7 @@ export function validateCountry(country?: string): void {
   }
 }
 
-export function validateEVMAddress({
+export function validateEVMAddressAndSignature({
   address,
   signedMessage,
   clearMessage,
@@ -139,16 +158,18 @@ export function validateEVMAddress({
   address: string;
   signedMessage: string;
   clearMessage: string;
-}): void {
-  const isValid = isValidEvmAddress(address);
-  if (!isValid) {
-    throw new BadRequestError("Validation error: Invalid EVM address");
-  }
-
+}): {
+  isAddressValid: boolean;
+  isSignatureValid: boolean;
+} {
+  const isAddressValid = isValidEvmAddress(address);
   const resolvedAddress = verifyMessage(clearMessage, signedMessage);
-  if (resolvedAddress !== address) {
-    throw new BadRequestError("Validation error: Invalid signature");
-  }
+  const isSignatureValid = resolvedAddress === address;
+
+  return {
+    isAddressValid,
+    isSignatureValid,
+  };
 }
 
 export function transformNotionRecordToAirdrop1(

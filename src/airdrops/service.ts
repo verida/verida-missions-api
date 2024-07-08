@@ -3,11 +3,7 @@ import { Client as VeridaClient } from "@verida/client-ts";
 import { isPromiseFulfilled } from "../common";
 import { config } from "../config";
 import { getXpPointsForActivity, validateUserActivity } from "../missions";
-import {
-  AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
-  AIRDROP_1_CUTOFF_DATE,
-  AIRDROP_1_MIN_XP_POINTS,
-} from "./constants";
+import { AIRDROP_1_CUTOFF_DATE, AIRDROP_1_MIN_XP_POINTS } from "./constants";
 import {
   AlreadyClaimedError,
   AlreadyRegisteredError,
@@ -27,7 +23,6 @@ import {
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
   validateCountry,
-  validateEVMAddress,
 } from "./utils";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionError } from "../notion";
@@ -238,8 +233,7 @@ export class Service {
   async claimAirdrop1(
     claimDto: Airdrop1ClaimDto
   ): Promise<Airdrop1ClaimSuccessResult> {
-    const { did, termsAccepted, userEvmAddress, userEvmAddressSignature } =
-      claimDto;
+    const { did, termsAccepted, userEvmAddress } = claimDto;
 
     const airdrop1Record = await this.getAirdrop1Record(did);
 
@@ -254,12 +248,6 @@ export class Service {
     if (!termsAccepted) {
       throw new TermsNotAcceptedError();
     }
-
-    validateEVMAddress({
-      address: userEvmAddress,
-      signedMessage: userEvmAddressSignature,
-      clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
-    });
 
     // Transfer tokens
 
