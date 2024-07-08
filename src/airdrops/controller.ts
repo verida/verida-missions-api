@@ -3,6 +3,7 @@ import { BadRequestError, ErrorResponse } from "../common";
 import {
   AlreadyClaimedError,
   AlreadyRegisteredError,
+  InvalidEvmAddressError,
   NotEnoughXpPointsError,
   NotRegisteredError,
   TermsNotAcceptedError,
@@ -59,6 +60,7 @@ export class ControllerV1 {
       if (error instanceof BadRequestError) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -66,6 +68,7 @@ export class ControllerV1 {
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
       });
     }
@@ -94,6 +97,7 @@ export class ControllerV1 {
       if (error instanceof BadRequestError) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage:
             error.userMessage ||
@@ -104,6 +108,7 @@ export class ControllerV1 {
       if (error instanceof AlreadyRegisteredError) {
         return res.status(403).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -117,11 +122,13 @@ export class ControllerV1 {
         return res.status(403).send({
           status: "error",
           // Intentionally not sending the error details
+          errorCode: "Unauthorized",
         });
       }
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
         errorUserMessage:
           "Something went wrong on our side. Please try again later.",
@@ -151,9 +158,13 @@ export class ControllerV1 {
         transactionExplorerUrl: result.transactionExplorerUrl,
       });
     } catch (error) {
-      if (error instanceof BadRequestError) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage:
             error.userMessage ||
@@ -168,6 +179,7 @@ export class ControllerV1 {
       ) {
         return res.status(403).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -175,6 +187,7 @@ export class ControllerV1 {
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
       });
     }
@@ -208,6 +221,7 @@ export class ControllerV1 {
       if (error instanceof BadRequestError) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -215,6 +229,7 @@ export class ControllerV1 {
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
       });
     }
