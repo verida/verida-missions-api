@@ -1,5 +1,6 @@
 export * from "./AlreadyClaimedError";
 export * from "./AlreadyRegisteredError";
+export * from "./InvalidEvmAddressError";
 export * from "./NotEnoughXpPointsError";
 export * from "./NotRegisteredError";
 export * from "./TermsNotAcceptedError";

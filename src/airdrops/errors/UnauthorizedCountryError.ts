@@ -2,7 +2,7 @@ import { FunctionalError } from "../../common";
 
 export class UnauthorizedCountryError extends FunctionalError {
   constructor(
-    message = "UnauthorizedCountryError",
+    message = "Unauthorized country",
     userMessage = "Your country is not eligible",
     options?: ErrorOptions
   ) {

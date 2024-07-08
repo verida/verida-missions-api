@@ -2,7 +2,7 @@ import { FunctionalError } from "../../common";
 
 export class NotRegisteredError extends FunctionalError {
   constructor(
-    message = "NotRegisteredError",
+    message = "Not registered",
     userMessage = "Unfortunately, you are not registered for this airdrop",
     options?: ErrorOptions
   ) {
