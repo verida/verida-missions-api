@@ -64,10 +64,14 @@ export class Service {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        !!record && !record.claimed ? record.claimableAmount : null,
+        !!record && !record.claimed
+          ? record.claimableAmount ?? undefined
+          : undefined,
       claimedTokenAmount:
-        !!record && record.claimed ? record.claimedAmount : null,
-      claimTransactionUrl: record?.claimTransactionUrl ?? null,
+        !!record && record.claimed
+          ? record.claimedAmount ?? undefined
+          : undefined,
+      claimTransactionUrl: record?.claimTransactionUrl ?? undefined,
     };
   }
 
@@ -400,10 +404,14 @@ export class Service {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        !!record && !record.claimed ? record.claimableAmount : null,
+        !!record && !record.claimed
+          ? record.claimableAmount ?? undefined
+          : undefined,
       claimedTokenAmount:
-        !!record && record.claimed ? record.claimedAmount : null,
-      claimTransactionUrl: record?.claimTransactionUrl ?? null,
+        !!record && record.claimed
+          ? record.claimedAmount ?? undefined
+          : undefined,
+      claimTransactionUrl: record?.claimTransactionUrl ?? undefined,
     };
   }
 

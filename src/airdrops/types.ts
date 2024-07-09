@@ -24,9 +24,9 @@ export type Airdrop1Record = {
 export type Airdrop1UserStatus = {
   isRegistered: boolean;
   isClaimed: boolean;
-  claimableTokenAmount: number | null;
-  claimedTokenAmount: number | null;
-  claimTransactionUrl: string | null;
+  claimableTokenAmount?: number;
+  claimedTokenAmount?: number;
+  claimTransactionUrl?: string;
 };
 
 export type Airdrop1RegistrationDto = z.infer<
@@ -70,9 +70,9 @@ export type Airdrop2Record = {
 export type Airdrop2UserStatus = {
   isRegistered: boolean;
   isClaimed: boolean;
-  claimableTokenAmount: number | null;
-  claimedTokenAmount: number | null;
-  claimTransactionUrl: string | null;
+  claimableTokenAmount?: number;
+  claimedTokenAmount?: number;
+  claimTransactionUrl?: string;
 };
 
 export type Airdrop2CheckDto = z.infer<typeof Airdrop2CheckDtoSchema>;
