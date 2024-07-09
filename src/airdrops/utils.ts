@@ -6,18 +6,21 @@ import {
   isValidEvmAddress,
 } from "../common";
 import {
-  AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+  AIRDROPS_ADDRESS_SIGNED_MESSAGE,
   BLOCKED_COUNTRIES,
 } from "./constants";
 import { InvalidEvmAddressError, UnauthorizedCountryError } from "./errors";
 import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
+  Airdrop2CheckDtoSchema,
 } from "./schemas";
 import {
   Airdrop1ClaimDto,
   Airdrop1Record,
   Airdrop1RegistrationDto,
+  Airdrop2CheckDto,
+  Airdrop2Record,
 } from "./types";
 import { verifyMessage } from "ethers";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
@@ -77,6 +80,43 @@ export function extractAirdrop1RegistrationDtoFromRequest(
   }
 }
 
+export function extractAirdrop2CheckDtoFromRequest(
+  req: Request
+): Airdrop2CheckDto {
+  try {
+    const ipAddress = req.socket.remoteAddress;
+    // When developing locally, as 127.x.x.x is a local reserved range the IP checker won't resturn any result.
+    // To test, hardcode a valid IP address from a country you want to check
+
+    // Validate the DTO against the schema
+    const checkDto = Airdrop2CheckDtoSchema.parse({
+      ...req.body,
+      ipAddress,
+    });
+
+    const { isAddressValid, isSignatureValid } = validateEVMAddressAndSignature(
+      {
+        address: checkDto.userEvmAddress,
+        signedMessage: checkDto.userEvmAddressSignature,
+        clearMessage: AIRDROPS_ADDRESS_SIGNED_MESSAGE,
+      }
+    );
+
+    if (!isAddressValid || !isSignatureValid) {
+      throw new InvalidEvmAddressError();
+    }
+
+    return checkDto;
+  } catch (error) {
+    // Catching the error here to re-throw a more appropriate message than the Zod one
+    if (error instanceof ZodError) {
+      const message = error.issues.map((issue) => issue.message).join(", ");
+      throw new BadRequestError(`Validation error: ${message}`);
+    }
+    throw new BadRequestError(`Validation error`);
+  }
+}
+
 export function extractAirdrop1ClaimDtoFromRequest(
   req: Request
 ): Airdrop1ClaimDto {
@@ -88,7 +128,7 @@ export function extractAirdrop1ClaimDtoFromRequest(
       {
         address: claimDto.userEvmAddress,
         signedMessage: claimDto.userEvmAddressSignature,
-        clearMessage: AIRDROP_1_ADDRESS_SIGNED_MESSAGE,
+        clearMessage: AIRDROPS_ADDRESS_SIGNED_MESSAGE,
       }
     );
 
@@ -196,6 +236,32 @@ export function transformNotionRecordToAirdrop1(
     ),
     claimableAmount: getValueFromNotionNumberProperty(
       properties["Claimable token amount"]
+    ),
+    claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
+    claimedAmount: getValueFromNotionNumberProperty(
+      properties["Claimed amount"]
+    ),
+    claimTransactionUrl: getValueFromNotionUrlProperty(
+      properties["Transaction URL"]
+    ),
+  };
+}
+
+export function transformNotionRecordToAirdrop2(
+  record: DatabaseObjectResponse
+): Airdrop2Record {
+  // HACK: Surprisingly the Notion library types don't correspond to the
+  // actual data structure returned by the API, so we need to cast it
+  const properties = record.properties as unknown as Record<
+    string,
+    NotionDatabaseProperty
+  >;
+
+  return {
+    id: record.id,
+    walletAddress: getValueFromNotionTitleProperty(properties["Wallet"]),
+    claimableAmount: getValueFromNotionNumberProperty(
+      properties["total_VDA_reward"]
     ),
     claimed: getValueFromNotionCheckboxProperty(properties["Claimed"]),
     claimedAmount: getValueFromNotionNumberProperty(

@@ -18,10 +18,14 @@ import {
   Airdrop1Record,
   Airdrop1RegistrationDto,
   Airdrop1UserStatus,
+  Airdrop2CheckDto,
+  Airdrop2Record,
+  Airdrop2UserStatus,
 } from "./types";
 import {
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
+  transformNotionRecordToAirdrop2,
   validateCountry,
 } from "./utils";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
@@ -303,6 +307,8 @@ export class Service {
   /**
    * Check if a user is registered for the airdrop 2. Does not return the result, to prevent data leaks.
    *
+   * @deprecated
+   *
    * @param wallet the wallet address of the user to check.
    * @returns a boolean indicating whether the user is eligible.
    */
@@ -329,5 +335,73 @@ export class Service {
         cause: error,
       });
     }
+  }
+
+  private async getAirdrop2Record(
+    wallet: string
+  ): Promise<Airdrop2Record | undefined> {
+    try {
+      const result = await this.notionClient.databases.query({
+        database_id: config.AIRDROP_2_NOTION_DB_ID,
+        filter: {
+          or: [
+            {
+              property: "Wallet",
+              title: {
+                equals: wallet,
+              },
+            },
+          ],
+        },
+      });
+
+      if (result.results.length === 0) {
+        return undefined;
+      }
+
+      const record = result.results[0] as DatabaseObjectResponse;
+
+      const airdrop2Record = transformNotionRecordToAirdrop2(record);
+
+      return airdrop2Record;
+    } catch (error) {
+      throw new NotionError("Error while querying the database", undefined, {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * Get the status of a user for the airdrop 2. Does not return detailed
+   * result, to prevent data leaks.
+   *
+   * @param wallet the wallet address of the user to check.
+   * @returns the status for the user.
+   */
+  async getAirdrop2Status(
+    checkDto: Airdrop2CheckDto
+  ): Promise<Airdrop2UserStatus> {
+    const { profile, ipAddress } = checkDto;
+
+    // Check country fromn profile
+    validateCountry(profile.country); // Throw an error if invalid
+
+    // Check country from user's location
+    const requesterCountry = ipAddress
+      ? await getCountryFromIp(ipAddress)
+      : undefined;
+    validateCountry(requesterCountry); // Throw an error if invalid
+
+    const record = await this.getAirdrop2Record(checkDto.userEvmAddress);
+
+    return {
+      isRegistered: !!record, // If the record exists, the user is registered
+      isClaimed: record?.claimed ?? false,
+      claimableTokenAmount:
+        !!record && !record.claimed ? record.claimableAmount : null,
+      claimedTokenAmount:
+        !!record && record.claimed ? record.claimedAmount : null,
+      claimTransactionUrl: record?.claimTransactionUrl ?? null,
+    };
   }
 }

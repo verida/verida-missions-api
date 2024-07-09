@@ -13,6 +13,7 @@ import { Service } from "./service";
 import {
   extractAirdrop1ClaimDtoFromRequest,
   extractAirdrop1RegistrationDtoFromRequest,
+  extractAirdrop2CheckDtoFromRequest,
   extractDidFromRequestParams,
   extractWalletFromRequestParams,
 } from "./utils";
@@ -21,6 +22,7 @@ import {
   Airdrop1ClaimSuccessResponse,
   Airdrop1RegisterSuccessResponse,
   Airdrop2CheckSuccessResponse,
+  Airdrop2LegacyCheckSuccessResponse,
 } from "./types";
 
 export class ControllerV1 {
@@ -197,7 +199,7 @@ export class ControllerV1 {
   // MARK: Airdrop 2: Galxe and Zealy participants
 
   /**
-   * Check if a user is eligible for the airdrop 2.
+   * Check the status of a user for the airdrop 2.
    *
    * @param req The Express request object
    * @param res The Express response object
@@ -206,6 +208,61 @@ export class ControllerV1 {
   async airdrop2Check(
     req: Request,
     res: Response<Airdrop2CheckSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const checkDto = extractAirdrop2CheckDtoFromRequest(req);
+
+      const status = await this.service.getAirdrop2Status(checkDto);
+
+      return res.status(200).send({
+        status: "success",
+        isRegistered: status.isRegistered,
+        isClaimed: status.isClaimed,
+        claimableTokenAmount: status.claimableTokenAmount,
+        claimedTokenAmount: status.claimedTokenAmount,
+        claimTransactionUrl: status.claimTransactionUrl,
+      });
+    } catch (error) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (error instanceof UnauthorizedCountryError) {
+        return res.status(403).send({
+          status: "error",
+          // Intentionally not sending the error details
+          errorCode: "Unauthorized",
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+      });
+    }
+  }
+
+  /**
+   * Check if a user is eligible for the airdrop 2.
+   *
+   * @deprecated Use `airdrop2Check` instead
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2LegacyCheck(
+    req: Request,
+    res: Response<Airdrop2LegacyCheckSuccessResponse | ErrorResponse>
   ) {
     try {
       const wallet = extractWalletFromRequestParams(req);

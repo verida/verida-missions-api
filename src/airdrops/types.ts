@@ -2,7 +2,10 @@ import z from "zod";
 import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
+  Airdrop2CheckDtoSchema,
 } from "./schemas";
+
+// ---- Airdrop 1 ----
 
 export type Airdrop1Record = {
   id: string;
@@ -52,11 +55,39 @@ export type Airdrop1ClaimSuccessResponse = {
   status: "success";
 } & Airdrop1ClaimSuccessResult;
 
-export type Airdrop2CheckSuccessResponse = {
-  status: "success";
+// ---- Airdrop 2 ----
+
+export type Airdrop2Record = {
+  id: string;
+  walletAddress: string;
+  claimableAmount: number | null;
+  claimed: boolean;
+  claimedAmount: number | null;
+  claimTransactionUrl: string | null;
+};
+
+export type Airdrop2UserStatus = {
   isRegistered: boolean;
+  isClaimed: boolean;
+  claimableTokenAmount: number | null;
+  claimedTokenAmount: number | null;
+  claimTransactionUrl: string | null;
+};
+
+export type Airdrop2CheckDto = z.infer<typeof Airdrop2CheckDtoSchema>;
+
+/**
+ * @deprecated use Airdrop2CheckSuccessResponse instead
+ */
+export type Airdrop2LegacyCheckSuccessResponse = {
+  status: "success";
   /**
    * @deprecated use isRegistered instead
    */
   isEligible: boolean;
+  isRegistered: boolean;
 };
+
+export type Airdrop2CheckSuccessResponse = {
+  status: "success";
+} & Airdrop2UserStatus;

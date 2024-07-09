@@ -34,13 +34,11 @@ routerV1.post("/1/claim", (req, res) => controllerV1.airdrop1Claim(req, res));
 
 // Airdrop 2: Galxe and Zealy participants
 
-routerV1.get("/2/check/:wallet", (req, res) =>
-  controllerV1.airdrop2Check(req, res)
-);
+routerV1.post("/2/check", (req, res) => controllerV1.airdrop2Check(req, res));
 
 /**
  * @deprecated use /2/check/:wallet instead
  */
 routerV1.get("/2/eligibility/:wallet", (req, res) =>
-  controllerV1.airdrop2Check(req, res)
+  controllerV1.airdrop2LegacyCheck(req, res)
 );
