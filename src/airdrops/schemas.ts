@@ -37,3 +37,14 @@ export const Airdrop2CheckDtoSchema = z.object({
     .regex(EVM_ADDRESS_REGEXP, { message: "Invalid EVM address" }),
   userEvmAddressSignature: z.string(),
 });
+
+export const Airdrop2ClaimDtoSchema = z.object({
+  did: z.string().regex(VERIDA_DID_REGEXP, { message: "Invalid Verida DID" }),
+  profile: UserProfileInfoSchema,
+  ipAddress: z.string().optional(),
+  termsAccepted: z.boolean().default(false),
+  userEvmAddress: z
+    .string()
+    .regex(EVM_ADDRESS_REGEXP, { message: "Invalid EVM address" }),
+  userEvmAddressSignature: z.string(),
+});

@@ -14,12 +14,14 @@ import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
   Airdrop2CheckDtoSchema,
+  Airdrop2ClaimDtoSchema,
 } from "./schemas";
 import {
   Airdrop1ClaimDto,
   Airdrop1Record,
   Airdrop1RegistrationDto,
   Airdrop2CheckDto,
+  Airdrop2ClaimDto,
   Airdrop2Record,
 } from "./types";
 import { verifyMessage } from "ethers";
@@ -123,6 +125,41 @@ export function extractAirdrop1ClaimDtoFromRequest(
   try {
     // Validate the DTO against the schema
     const claimDto = Airdrop1ClaimDtoSchema.parse(req.body);
+
+    const { isAddressValid, isSignatureValid } = validateEVMAddressAndSignature(
+      {
+        address: claimDto.userEvmAddress,
+        signedMessage: claimDto.userEvmAddressSignature,
+        clearMessage: AIRDROPS_ADDRESS_SIGNED_MESSAGE,
+      }
+    );
+
+    if (!isAddressValid || !isSignatureValid) {
+      throw new InvalidEvmAddressError();
+    }
+
+    return claimDto;
+  } catch (error) {
+    // Catching the error here to re-throw a more appropriate message than the Zod one
+    if (error instanceof ZodError) {
+      const message = error.issues.map((issue) => issue.message).join(", ");
+      throw new BadRequestError(`Validation error: ${message}`);
+    }
+
+    if (error instanceof InvalidEvmAddressError) {
+      throw error;
+    }
+
+    throw new BadRequestError(`Validation error`);
+  }
+}
+
+export function extractAirdrop2ClaimDtoFromRequest(
+  req: Request
+): Airdrop2ClaimDto {
+  try {
+    // Validate the DTO against the schema
+    const claimDto = Airdrop2ClaimDtoSchema.parse(req.body);
 
     const { isAddressValid, isSignatureValid } = validateEVMAddressAndSignature(
       {

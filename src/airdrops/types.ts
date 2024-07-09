@@ -3,6 +3,7 @@ import {
   Airdrop1ClaimDtoSchema,
   Airdrop1RegistrationDtoSchema,
   Airdrop2CheckDtoSchema,
+  Airdrop2ClaimDtoSchema,
 } from "./schemas";
 
 // ---- Airdrop 1 ----
@@ -91,3 +92,14 @@ export type Airdrop2LegacyCheckSuccessResponse = {
 export type Airdrop2CheckSuccessResponse = {
   status: "success";
 } & Airdrop2UserStatus;
+
+export type Airdrop2ClaimDto = z.infer<typeof Airdrop2ClaimDtoSchema>;
+
+export type Airdrop2ClaimSuccessResult = {
+  transactionExplorerUrl: string;
+  claimedTokenAmount: number;
+};
+
+export type Airdrop2ClaimSuccessResponse = {
+  status: "success";
+} & Airdrop2ClaimSuccessResult;

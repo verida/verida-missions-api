@@ -42,3 +42,5 @@ routerV1.post("/2/check", (req, res) => controllerV1.airdrop2Check(req, res));
 routerV1.get("/2/eligibility/:wallet", (req, res) =>
   controllerV1.airdrop2LegacyCheck(req, res)
 );
+
+routerV1.post("/2/claim", (req, res) => controllerV1.airdrop2Claim(req, res));

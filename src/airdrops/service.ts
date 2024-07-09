@@ -19,6 +19,8 @@ import {
   Airdrop1RegistrationDto,
   Airdrop1UserStatus,
   Airdrop2CheckDto,
+  Airdrop2ClaimDto,
+  Airdrop2ClaimSuccessResult,
   Airdrop2Record,
   Airdrop2UserStatus,
 } from "./types";
@@ -381,7 +383,7 @@ export class Service {
   async getAirdrop2Status(
     checkDto: Airdrop2CheckDto
   ): Promise<Airdrop2UserStatus> {
-    const { profile, ipAddress } = checkDto;
+    const { profile, ipAddress, userEvmAddress } = checkDto;
 
     // Check country fromn profile
     validateCountry(profile.country); // Throw an error if invalid
@@ -392,7 +394,7 @@ export class Service {
       : undefined;
     validateCountry(requesterCountry); // Throw an error if invalid
 
-    const record = await this.getAirdrop2Record(checkDto.userEvmAddress);
+    const record = await this.getAirdrop2Record(userEvmAddress);
 
     return {
       isRegistered: !!record, // If the record exists, the user is registered
@@ -402,6 +404,91 @@ export class Service {
       claimedTokenAmount:
         !!record && record.claimed ? record.claimedAmount : null,
       claimTransactionUrl: record?.claimTransactionUrl ?? null,
+    };
+  }
+
+  /**
+   * Claim the airdrop 2.
+   *
+   * @param claimDto the DTO for the claim
+   */
+  async claimAirdrop2(
+    claimDto: Airdrop2ClaimDto
+  ): Promise<Airdrop2ClaimSuccessResult> {
+    const { termsAccepted, userEvmAddress, profile, ipAddress } = claimDto;
+
+    // Check country fromn profile
+    validateCountry(profile.country); // Throw an error if invalid
+
+    // Check country from user's location
+    const requesterCountry = ipAddress
+      ? await getCountryFromIp(ipAddress)
+      : undefined;
+    validateCountry(requesterCountry); // Throw an error if invalid
+
+    const airdrop2Record = await this.getAirdrop2Record(userEvmAddress);
+
+    if (!airdrop2Record) {
+      throw new NotRegisteredError();
+    }
+
+    if (airdrop2Record.claimed) {
+      throw new AlreadyClaimedError();
+    }
+
+    if (!termsAccepted) {
+      throw new TermsNotAcceptedError();
+    }
+
+    if (airdrop2Record.claimableAmount === null) {
+      throw new InvalidClaimableTokenAmountError(
+        "The claimable token amount is null"
+      );
+    }
+
+    if (airdrop2Record.claimableAmount <= 0) {
+      throw new InvalidClaimableTokenAmountError(
+        "The claimable token amount is negative or zero"
+      );
+    }
+
+    // Transfer tokens
+    const transactionHash = await transferVdaTokens({
+      to: userEvmAddress,
+      amount: airdrop2Record.claimableAmount,
+    });
+
+    const transactionExplorerUrl =
+      getBlockchainExplorerTransactionUrl(transactionHash);
+
+    // Update the Notion record
+    try {
+      await this.notionClient.pages.update({
+        page_id: airdrop2Record.id,
+        properties: {
+          "Claimed": {
+            type: "checkbox",
+            checkbox: true,
+          },
+          "Claimed amount": {
+            type: "number",
+            number: airdrop2Record.claimableAmount,
+          },
+          "Transaction URL": {
+            type: "url",
+            url: transactionExplorerUrl,
+          },
+        },
+      });
+    } catch (error) {
+      throw new NotionError("Error while updating a record", undefined, {
+        cause: error,
+      });
+    }
+
+    return {
+      transactionExplorerUrl,
+      claimedTokenAmount: airdrop2Record.claimableAmount,
     };
   }
 }

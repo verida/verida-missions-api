@@ -14,6 +14,7 @@ import {
   extractAirdrop1ClaimDtoFromRequest,
   extractAirdrop1RegistrationDtoFromRequest,
   extractAirdrop2CheckDtoFromRequest,
+  extractAirdrop2ClaimDtoFromRequest,
   extractDidFromRequestParams,
   extractWalletFromRequestParams,
 } from "./utils";
@@ -22,6 +23,7 @@ import {
   Airdrop1ClaimSuccessResponse,
   Airdrop1RegisterSuccessResponse,
   Airdrop2CheckSuccessResponse,
+  Airdrop2ClaimSuccessResponse,
   Airdrop2LegacyCheckSuccessResponse,
 } from "./types";
 
@@ -282,6 +284,71 @@ export class ControllerV1 {
           errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+      });
+    }
+  }
+
+  /**
+   * Claim the airdrop 2
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2Claim(
+    req: Request,
+    res: Response<Airdrop2ClaimSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const claimDto = extractAirdrop2ClaimDtoFromRequest(req);
+
+      const result = await this.service.claimAirdrop2(claimDto);
+
+      return res.status(201).send({
+        status: "success",
+        claimedTokenAmount: result.claimedTokenAmount,
+        transactionExplorerUrl: result.transactionExplorerUrl,
+      });
+    } catch (error) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage:
+            error.userMessage ||
+            "Something went wrong on our side. Please try again later.",
+        });
+      }
+
+      if (
+        error instanceof TermsNotAcceptedError ||
+        error instanceof NotRegisteredError ||
+        error instanceof AlreadyClaimedError
+      ) {
+        return res.status(403).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (error instanceof UnauthorizedCountryError) {
+        return res.status(403).send({
+          status: "error",
+          // Intentionally not sending the error details
+          errorCode: "Unauthorized",
         });
       }
 
