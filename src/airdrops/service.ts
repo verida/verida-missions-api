@@ -498,16 +498,17 @@ export class Service {
   async claimAirdrop2(
     claimDto: Airdrop2ClaimDto
   ): Promise<Airdrop2ClaimSuccessResult> {
-    const { termsAccepted, userEvmAddress, profile, ipAddress } = claimDto;
+    const { termsAccepted, userEvmAddress } = claimDto;
+    // const { termsAccepted, userEvmAddress, profile, ipAddress } = claimDto;
 
     // Check country fromn profile
-    validateCountry(profile.country); // Throw an error if invalid
+    // validateCountry(profile.country); // Throw an error if invalid
 
     // Check country from user's location
-    const requesterCountry = ipAddress
-      ? await getCountryFromIp(ipAddress)
-      : undefined;
-    validateCountry(requesterCountry); // Throw an error if invalid
+    // const requesterCountry = ipAddress
+    //   ? await getCountryFromIp(ipAddress)
+    //   : undefined;
+    // validateCountry(requesterCountry); // Throw an error if invalid
 
     const airdrop2Record = await this.getAirdrop2Record(userEvmAddress);
 
