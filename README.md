@@ -5,6 +5,8 @@ This is a REST API for the Verida Missions web app with endpoints to deal with t
 ## Endpoints
 
 ```
+GET  /_status
+
 GET  /api/rest/v1/airdrops/1/check/:did
 GET  /api/rest/v1/airdrops/1/proofs/:did - deprecated
 

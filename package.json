@@ -8,6 +8,8 @@
   "license": "ISC",
   "main": "build/server.js",
   "scripts": {
+    "postinstall": "yarn run setVersion",
+    "setVersion": "echo 'export const Version = { version: \"'$npm_package_version'\", build_time_utc: \"'$(date -u -Iseconds)'\" };' > ./src/status/version.ts",
     "format:check": "npx prettier src/ --check",
     "format": "npx prettier src/ --write",
     "lint:check": "eslint src/ --ext .js,.jsx,.ts,.tsx",
@@ -15,7 +17,7 @@
     "check": "yarn run format:check && yarn run lint:check",
     "fix": "yarn run format && yarn run lint",
     "test": "ts-mocha './tests/**/*.ts'",
-    "prebuild": "rm -rf build",
+    "prebuild": "rm -rf build && yarn run setVersion",
     "build": "tsc",
     "prestart": "yarn run build",
     "start": "sls offline start --stage offline --noTimeout",
