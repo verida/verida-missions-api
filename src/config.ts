@@ -20,6 +20,10 @@ const EnvVarsSchema = z
     NOTION_API_KEY: z.string(),
     AIRDROP_1_NOTION_DB_ID: z.string(),
     AIRDROP_2_NOTION_DB_ID: z.string(),
+    AIRDROPS_SENDER_ACCOUNT_PRIVATE_KEY: z.string(),
+    BLOCKCHAIN_VDA_CONTRACT_ADDRESS: z.string(),
+    BLOCKCHAIN_RPC_URL: z.string().url(),
+    BLOCKCHAIN_TRANSACTION_EXPLORER_URL: z.string().url(),
   })
   .passthrough();
 

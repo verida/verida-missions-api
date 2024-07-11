@@ -3,7 +3,6 @@ coverage
 dist/
 build/
 keys/
-v*/
 serverconfig.*.json
 .DS_Store
 .serverless/

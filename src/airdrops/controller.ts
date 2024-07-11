@@ -1,21 +1,30 @@
 import { Request, Response } from "express";
 import { BadRequestError, ErrorResponse } from "../common";
 import {
-  AlreadyExistsError,
+  AlreadyClaimedError,
+  AlreadyRegisteredError,
+  InvalidEvmAddressError,
   NotEnoughXpPointsError,
+  NotRegisteredError,
   TermsNotAcceptedError,
   UnauthorizedCountryError,
 } from "./errors";
 import { Service } from "./service";
 import {
-  extractAirdrop1SubmitProofDtoFromRequest,
+  extractAirdrop1ClaimDtoFromRequest,
+  extractAirdrop1RegistrationDtoFromRequest,
+  extractAirdrop2CheckDtoFromRequest,
+  extractAirdrop2ClaimDtoFromRequest,
   extractDidFromRequestParams,
   extractWalletFromRequestParams,
 } from "./utils";
 import {
-  Airdrop1CheckProofExistSuccessResponse,
-  Airdrop1SubmitProofSuccessResponse,
-  Airdrop2CheckEligibilitySuccessResponse,
+  Airdrop1CheckSuccessResponse,
+  Airdrop1ClaimSuccessResponse,
+  Airdrop1RegisterSuccessResponse,
+  Airdrop2CheckSuccessResponse,
+  Airdrop2ClaimSuccessResponse,
+  Airdrop2LegacyCheckSuccessResponse,
 } from "./types";
 
 export class ControllerV1 {
@@ -28,29 +37,35 @@ export class ControllerV1 {
   // MARK: Airdrop 1: Early adopters of Verida Missions
 
   /**
-   * Check if a proof for the airdrop 1 has already been submitted for a given did
+   * Check the status of the airdrop 1 for a given DID.
    *
    * @param req The Express request object
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1CheckProofExist(
+  async airdrop1Check(
     req: Request,
-    res: Response<Airdrop1CheckProofExistSuccessResponse | ErrorResponse>
+    res: Response<Airdrop1CheckSuccessResponse | ErrorResponse>
   ) {
     try {
       const did = extractDidFromRequestParams(req);
 
-      const exists = await this.service.checkAirdrop1ProofExist(did);
+      const status = await this.service.getAirdrop1Status(did);
 
       return res.status(200).send({
         status: "success",
-        exists,
+        exists: status.isRegistered,
+        isRegistered: status.isRegistered,
+        isClaimed: status.isClaimed,
+        claimableTokenAmount: status.claimableTokenAmount,
+        claimedTokenAmount: status.claimedTokenAmount,
+        claimTransactionUrl: status.claimTransactionUrl,
       });
     } catch (error) {
       if (error instanceof BadRequestError) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -58,26 +73,27 @@ export class ControllerV1 {
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
       });
     }
   }
 
   /**
-   * Submit a proof for the airdrop 1
+   * Register for the airdrop 1
    *
    * @param req The Express request object
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1SubmitProof(
+  async airdrop1Register(
     req: Request,
-    res: Response<Airdrop1SubmitProofSuccessResponse | ErrorResponse>
+    res: Response<Airdrop1RegisterSuccessResponse | ErrorResponse>
   ) {
     try {
-      const submitProofDto = extractAirdrop1SubmitProofDtoFromRequest(req);
+      const registrationDto = extractAirdrop1RegistrationDtoFromRequest(req);
 
-      await this.service.submitAirdrop1Proof(submitProofDto);
+      await this.service.registerAirdrop1(registrationDto);
 
       return res.status(201).send({
         status: "success",
@@ -86,6 +102,74 @@ export class ControllerV1 {
       if (error instanceof BadRequestError) {
         return res.status(400).send({
           status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage:
+            error.userMessage ||
+            "Something went wrong on our side. Please try again later.",
+        });
+      }
+
+      if (error instanceof AlreadyRegisteredError) {
+        return res.status(403).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (
+        error instanceof NotEnoughXpPointsError ||
+        error instanceof TermsNotAcceptedError ||
+        error instanceof UnauthorizedCountryError
+      ) {
+        return res.status(403).send({
+          status: "error",
+          // Intentionally not sending the error details
+          errorCode: "Unauthorized",
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+        errorUserMessage:
+          "Something went wrong on our side. Please try again later.",
+      });
+    }
+  }
+
+  /**
+   * Claim the airdrop 1
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop1Claim(
+    req: Request,
+    res: Response<Airdrop1ClaimSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const claimDto = extractAirdrop1ClaimDtoFromRequest(req);
+
+      const result = await this.service.claimAirdrop1(claimDto);
+
+      return res.status(201).send({
+        status: "success",
+        claimedTokenAmount: result.claimedTokenAmount,
+        transactionExplorerUrl: result.transactionExplorerUrl,
+      });
+    } catch (error) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage:
             error.userMessage ||
@@ -94,55 +178,13 @@ export class ControllerV1 {
       }
 
       if (
-        error instanceof AlreadyExistsError ||
-        error instanceof NotEnoughXpPointsError ||
         error instanceof TermsNotAcceptedError ||
-        error instanceof UnauthorizedCountryError
+        error instanceof NotRegisteredError ||
+        error instanceof AlreadyClaimedError
       ) {
         return res.status(403).send({
           status: "error",
-
-          // Actually don't send the error message to the user
-          // errorMessage: error.message,
-          // errorUserMessage: error.userMessage,
-        });
-      }
-
-      return res.status(500).send({
-        status: "error",
-        errorMessage: "Something went wrong",
-        errorUserMessage:
-          "Something went wrong on our side. Please try again later.",
-      });
-    }
-  }
-
-  // MARK: Airdrop 2: Galxe and Zealy participants
-
-  /**
-   * Check if a user is eligible for the airdrop 2.
-   *
-   * @param req The Express request object
-   * @param res The Express response object
-   * @returns The response
-   */
-  async airdrop2CheckEligibility(
-    req: Request,
-    res: Response<Airdrop2CheckEligibilitySuccessResponse | ErrorResponse>
-  ) {
-    try {
-      const wallet = extractWalletFromRequestParams(req);
-
-      const isEligible = await this.service.checkAirdrop2Eligibility(wallet);
-
-      return res.status(200).send({
-        status: "success",
-        isEligible,
-      });
-    } catch (error) {
-      if (error instanceof BadRequestError) {
-        return res.status(400).send({
-          status: "error",
+          errorCode: error.code,
           errorMessage: error.message,
           errorUserMessage: error.userMessage,
         });
@@ -150,6 +192,169 @@ export class ControllerV1 {
 
       return res.status(500).send({
         status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+      });
+    }
+  }
+
+  // MARK: Airdrop 2: Galxe and Zealy participants
+
+  /**
+   * Check the status of a user for the airdrop 2.
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2Check(
+    req: Request,
+    res: Response<Airdrop2CheckSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const checkDto = extractAirdrop2CheckDtoFromRequest(req);
+
+      const status = await this.service.getAirdrop2Status(checkDto);
+
+      return res.status(200).send({
+        status: "success",
+        isRegistered: status.isRegistered,
+        isClaimed: status.isClaimed,
+        claimableTokenAmount: status.claimableTokenAmount,
+        claimedTokenAmount: status.claimedTokenAmount,
+        claimTransactionUrl: status.claimTransactionUrl,
+      });
+    } catch (error) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (error instanceof UnauthorizedCountryError) {
+        return res.status(403).send({
+          status: "error",
+          // Intentionally not sending the error details
+          errorCode: "Unauthorized",
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+      });
+    }
+  }
+
+  /**
+   * Check if a user is eligible for the airdrop 2.
+   *
+   * @deprecated Use `airdrop2Check` instead
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2LegacyCheck(
+    req: Request,
+    res: Response<Airdrop2LegacyCheckSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const wallet = extractWalletFromRequestParams(req);
+
+      const isRegistered =
+        await this.service.checkAirdrop2RegistrationExist(wallet);
+
+      return res.status(200).send({
+        status: "success",
+        isRegistered,
+        isEligible: isRegistered,
+      });
+    } catch (error) {
+      if (error instanceof BadRequestError) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
+        errorMessage: "Something went wrong",
+      });
+    }
+  }
+
+  /**
+   * Claim the airdrop 2
+   *
+   * @param req The Express request object
+   * @param res The Express response object
+   * @returns The response
+   */
+  async airdrop2Claim(
+    req: Request,
+    res: Response<Airdrop2ClaimSuccessResponse | ErrorResponse>
+  ) {
+    try {
+      const claimDto = extractAirdrop2ClaimDtoFromRequest(req);
+
+      const result = await this.service.claimAirdrop2(claimDto);
+
+      return res.status(201).send({
+        status: "success",
+        claimedTokenAmount: result.claimedTokenAmount,
+        transactionExplorerUrl: result.transactionExplorerUrl,
+      });
+    } catch (error) {
+      if (
+        error instanceof InvalidEvmAddressError ||
+        error instanceof BadRequestError
+      ) {
+        return res.status(400).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage:
+            error.userMessage ||
+            "Something went wrong on our side. Please try again later.",
+        });
+      }
+
+      if (
+        error instanceof TermsNotAcceptedError ||
+        error instanceof NotRegisteredError ||
+        error instanceof AlreadyClaimedError
+      ) {
+        return res.status(403).send({
+          status: "error",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorUserMessage: error.userMessage,
+        });
+      }
+
+      if (error instanceof UnauthorizedCountryError) {
+        return res.status(403).send({
+          status: "error",
+          // Intentionally not sending the error details
+          errorCode: "Unauthorized",
+        });
+      }
+
+      return res.status(500).send({
+        status: "error",
+        errorCode: "InternalError",
         errorMessage: "Something went wrong",
       });
     }
