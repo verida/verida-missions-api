@@ -25,6 +25,8 @@ import {
   Airdrop2UserStatus,
 } from "./types";
 import {
+  closeAirdrop1ClaimInNotion,
+  closeAirdrop2ClaimInNotion,
   getCountryFromIp,
   transformNotionRecordToAirdrop1,
   transformNotionRecordToAirdrop2,
@@ -34,6 +36,7 @@ import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints
 import { NotionError } from "../notion";
 import {
   getBlockchainExplorerTransactionUrl,
+  isTransactionSuccessfull,
   transferVdaTokens,
 } from "../blockchain";
 
@@ -48,31 +51,6 @@ export class Service {
     this.veridaClient = new VeridaClient({
       environment: config.VERIDA_NETWORK,
     });
-  }
-
-  /**
-   * Get the status of a user for the airdrop 1. Does not return detailed
-   * result, to prevent data leaks.
-   *
-   * @param did the DID the proof has been submitted for.
-   * @returns the status for the user.
-   */
-  async getAirdrop1Status(did: string): Promise<Airdrop1UserStatus> {
-    const record = await this.getAirdrop1Record(did);
-
-    return {
-      isRegistered: !!record, // If the record exists, the user is registered
-      isClaimed: record?.claimed ?? false,
-      claimableTokenAmount:
-        !!record && !record.claimed
-          ? record.claimableAmount ?? undefined
-          : undefined,
-      claimedTokenAmount:
-        !!record && record.claimed
-          ? record.claimedAmount ?? undefined
-          : undefined,
-      claimTransactionUrl: record?.claimTransactionUrl ?? undefined,
-    };
   }
 
   private async getAirdrop1Record(
@@ -108,6 +86,54 @@ export class Service {
         cause: error,
       });
     }
+  }
+
+  /**
+   * Get the status of a user for the airdrop 1. Does not return detailed
+   * result, to prevent data leaks.
+   *
+   * @param did the DID the proof has been submitted for.
+   * @returns the status for the user.
+   */
+  async getAirdrop1Status(did: string): Promise<Airdrop1UserStatus> {
+    let record = await this.getAirdrop1Record(did);
+
+    if (record && !record.claimed && record.claimTransactionHash) {
+      // Check if the transaction has been completed
+      const isClaimed = await isTransactionSuccessfull(
+        record.claimTransactionHash
+      );
+
+      if (isClaimed) {
+        // Update the Notion record
+        await closeAirdrop1ClaimInNotion(
+          this.notionClient,
+          record.id,
+          record.claimableAmount as number
+          // If the transaction has been initiated, the claimable amount
+          // should be defined
+        );
+
+        record = await this.getAirdrop1Record(did);
+      }
+    }
+
+    return {
+      isRegistered: !!record, // If the record exists, the user is registered
+      isClaimed: record?.claimed ?? false,
+      claimableTokenAmount:
+        record && !record.claimed
+          ? record.claimableAmount ?? undefined
+          : undefined,
+      claimedTokenAmount:
+        record && record.claimed
+          ? record.claimedAmount ?? undefined
+          : undefined,
+      claimTransactionUrl:
+        record && record.claimed && record.claimTransactionHash
+          ? getBlockchainExplorerTransactionUrl(record?.claimTransactionHash)
+          : undefined,
+    };
   }
 
   /**
@@ -254,6 +280,28 @@ export class Service {
       throw new AlreadyClaimedError();
     }
 
+    // In case a claim transaction has been initiated but the record hasn't
+    // been updated yet with the `claimed` boolean.
+    if (airdrop1Record.claimTransactionHash) {
+      // Check if the transaction has been completed
+      const isClaimed = await isTransactionSuccessfull(
+        airdrop1Record.claimTransactionHash
+      );
+
+      if (isClaimed) {
+        // Update the Notion record
+        await closeAirdrop1ClaimInNotion(
+          this.notionClient,
+          airdrop1Record.id,
+          airdrop1Record.claimableAmount as number
+          // If the transaction has been initiated, the claimable amount
+          // should be defined
+        );
+
+        throw new AlreadyClaimedError();
+      }
+    }
+
     if (!termsAccepted) {
       throw new TermsNotAcceptedError();
     }
@@ -274,38 +322,42 @@ export class Service {
     const transactionHash = await transferVdaTokens({
       to: userEvmAddress,
       amount: airdrop1Record.claimableAmount,
+      onTransferStarted: async (txHash) => {
+        try {
+          await this.notionClient.pages.update({
+            page_id: airdrop1Record.id,
+            properties: {
+              "Transaction Hash": {
+                type: "rich_text",
+                rich_text: [
+                  {
+                    type: "text",
+                    text: {
+                      content: txHash,
+                    },
+                  },
+                ],
+              },
+            },
+          });
+        } catch (error) {
+          throw new NotionError("Error while updating a record", undefined, {
+            cause: error,
+          });
+        }
+      },
     });
 
-    const transactionExplorerUrl =
-      getBlockchainExplorerTransactionUrl(transactionHash);
-
     // Update the Notion record
-    try {
-      await this.notionClient.pages.update({
-        page_id: airdrop1Record.id,
-        properties: {
-          "Claimed": {
-            type: "checkbox",
-            checkbox: true,
-          },
-          "Claimed amount": {
-            type: "number",
-            number: airdrop1Record.claimableAmount,
-          },
-          "Transaction URL": {
-            type: "url",
-            url: transactionExplorerUrl,
-          },
-        },
-      });
-    } catch (error) {
-      throw new NotionError("Error while updating a record", undefined, {
-        cause: error,
-      });
-    }
+    await closeAirdrop1ClaimInNotion(
+      this.notionClient,
+      airdrop1Record.id,
+      airdrop1Record.claimableAmount
+    );
 
     return {
-      transactionExplorerUrl,
+      transactionExplorerUrl:
+        getBlockchainExplorerTransactionUrl(transactionHash),
       claimedTokenAmount: airdrop1Record.claimableAmount,
     };
   }
@@ -398,20 +450,43 @@ export class Service {
       : undefined;
     validateCountry(requesterCountry); // Throw an error if invalid
 
-    const record = await this.getAirdrop2Record(userEvmAddress);
+    let record = await this.getAirdrop2Record(userEvmAddress);
+
+    if (record && !record.claimed && record.claimTransactionHash) {
+      // Check if the transaction has been completed
+      const isClaimed = await isTransactionSuccessfull(
+        record.claimTransactionHash
+      );
+
+      if (isClaimed) {
+        // Update the Notion record
+        await closeAirdrop2ClaimInNotion(
+          this.notionClient,
+          record.id,
+          record.claimableAmount as number
+          // If the transaction has been initiated, the claimable amount
+          // should be defined
+        );
+
+        record = await this.getAirdrop2Record(userEvmAddress);
+      }
+    }
 
     return {
       isRegistered: !!record, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        !!record && !record.claimed
+        record && !record.claimed
           ? record.claimableAmount ?? undefined
           : undefined,
       claimedTokenAmount:
-        !!record && record.claimed
+        record && record.claimed
           ? record.claimedAmount ?? undefined
           : undefined,
-      claimTransactionUrl: record?.claimTransactionUrl ?? undefined,
+      claimTransactionUrl:
+        record && record.claimed && record.claimTransactionHash
+          ? getBlockchainExplorerTransactionUrl(record?.claimTransactionHash)
+          : undefined,
     };
   }
 
@@ -444,6 +519,28 @@ export class Service {
       throw new AlreadyClaimedError();
     }
 
+    // In case a claim transaction has been initiated but the record hasn't
+    // been updated yet with the `claimed` boolean.
+    if (airdrop2Record.claimTransactionHash) {
+      // Check if the transaction has been completed
+      const isClaimed = await isTransactionSuccessfull(
+        airdrop2Record.claimTransactionHash
+      );
+
+      if (isClaimed) {
+        // Update the Notion record
+        await closeAirdrop2ClaimInNotion(
+          this.notionClient,
+          airdrop2Record.id,
+          airdrop2Record.claimableAmount as number
+          // If the transaction has been initiated, the claimable amount
+          // should be defined
+        );
+
+        throw new AlreadyClaimedError();
+      }
+    }
+
     if (!termsAccepted) {
       throw new TermsNotAcceptedError();
     }
@@ -464,38 +561,42 @@ export class Service {
     const transactionHash = await transferVdaTokens({
       to: userEvmAddress,
       amount: airdrop2Record.claimableAmount,
+      onTransferStarted: async (txHash) => {
+        try {
+          await this.notionClient.pages.update({
+            page_id: airdrop2Record.id,
+            properties: {
+              "Transaction Hash": {
+                type: "rich_text",
+                rich_text: [
+                  {
+                    type: "text",
+                    text: {
+                      content: txHash,
+                    },
+                  },
+                ],
+              },
+            },
+          });
+        } catch (error) {
+          throw new NotionError("Error while updating a record", undefined, {
+            cause: error,
+          });
+        }
+      },
     });
 
-    const transactionExplorerUrl =
-      getBlockchainExplorerTransactionUrl(transactionHash);
-
     // Update the Notion record
-    try {
-      await this.notionClient.pages.update({
-        page_id: airdrop2Record.id,
-        properties: {
-          "Claimed": {
-            type: "checkbox",
-            checkbox: true,
-          },
-          "Claimed amount": {
-            type: "number",
-            number: airdrop2Record.claimableAmount,
-          },
-          "Transaction URL": {
-            type: "url",
-            url: transactionExplorerUrl,
-          },
-        },
-      });
-    } catch (error) {
-      throw new NotionError("Error while updating a record", undefined, {
-        cause: error,
-      });
-    }
+    await closeAirdrop2ClaimInNotion(
+      this.notionClient,
+      airdrop2Record.id,
+      airdrop2Record.claimableAmount
+    );
 
     return {
-      transactionExplorerUrl,
+      transactionExplorerUrl:
+        getBlockchainExplorerTransactionUrl(transactionHash),
       claimedTokenAmount: airdrop2Record.claimableAmount,
     };
   }

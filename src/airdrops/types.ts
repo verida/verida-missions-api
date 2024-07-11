@@ -18,7 +18,7 @@ export type Airdrop1Record = {
   claimableAmount: number | null;
   claimed: boolean;
   claimedAmount: number | null;
-  claimTransactionUrl: string | null;
+  claimTransactionHash: string | null;
 };
 
 export type Airdrop1UserStatus = {
@@ -64,7 +64,7 @@ export type Airdrop2Record = {
   claimableAmount: number | null;
   claimed: boolean;
   claimedAmount: number | null;
-  claimTransactionUrl: string | null;
+  claimTransactionHash: string | null;
 };
 
 export type Airdrop2UserStatus = {

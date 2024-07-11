@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { Client as NotionClient } from "@notionhq/client";
 import { ZodError } from "zod";
 import {
   isValidVeridaDid,
@@ -28,11 +29,11 @@ import { verifyMessage } from "ethers";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import {
   NotionDatabaseProperty,
+  NotionError,
   getValueFromNotionCheckboxProperty,
   getValueFromNotionNumberProperty,
   getValueFromNotionRichTextProperty,
   getValueFromNotionTitleProperty,
-  getValueFromNotionUrlProperty,
 } from "../notion";
 
 export function extractDidFromRequestParams(req: Request): string {
@@ -278,8 +279,8 @@ export function transformNotionRecordToAirdrop1(
     claimedAmount: getValueFromNotionNumberProperty(
       properties["Claimed amount"]
     ),
-    claimTransactionUrl: getValueFromNotionUrlProperty(
-      properties["Transaction URL"]
+    claimTransactionHash: getValueFromNotionRichTextProperty(
+      properties["Transaction Hash"]
     ),
   };
 }
@@ -304,8 +305,60 @@ export function transformNotionRecordToAirdrop2(
     claimedAmount: getValueFromNotionNumberProperty(
       properties["Claimed amount"]
     ),
-    claimTransactionUrl: getValueFromNotionUrlProperty(
-      properties["Transaction URL"]
+    claimTransactionHash: getValueFromNotionRichTextProperty(
+      properties["Transaction Hash"]
     ),
   };
+}
+
+export async function closeAirdrop1ClaimInNotion(
+  notionClient: NotionClient,
+  recordId: string,
+  claimableAmount: number
+) {
+  try {
+    await notionClient.pages.update({
+      page_id: recordId,
+      properties: {
+        "Claimed": {
+          type: "checkbox",
+          checkbox: true,
+        },
+        "Claimed amount": {
+          type: "number",
+          number: claimableAmount,
+        },
+      },
+    });
+  } catch (error) {
+    throw new NotionError("Error while updating a record", undefined, {
+      cause: error,
+    });
+  }
+}
+
+export async function closeAirdrop2ClaimInNotion(
+  notionClient: NotionClient,
+  recordId: string,
+  claimableAmount: number
+) {
+  try {
+    await notionClient.pages.update({
+      page_id: recordId,
+      properties: {
+        "Claimed": {
+          type: "checkbox",
+          checkbox: true,
+        },
+        "Claimed amount": {
+          type: "number",
+          number: claimableAmount,
+        },
+      },
+    });
+  } catch (error) {
+    throw new NotionError("Error while updating a record", undefined, {
+      cause: error,
+    });
+  }
 }

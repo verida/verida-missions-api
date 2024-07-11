@@ -18,9 +18,11 @@ const vdaTokenErc20Abi = [
 export async function transferVdaTokens({
   to,
   amount,
+  onTransferStarted,
 }: {
   to: string;
   amount: number;
+  onTransferStarted?: (txHash: string) => Promise<void>;
 }): Promise<string> {
   try {
     const senderWallet = new Wallet(
@@ -42,6 +44,10 @@ export async function transferVdaTokens({
       tokenAmount
     )) as ContractTransactionResponse;
 
+    if (onTransferStarted) {
+      void onTransferStarted(transaction.hash);
+    }
+
     const transactionReceipt = await transaction.wait();
     if (!transactionReceipt) {
       throw new BlockchainTransactionFailureError(
@@ -55,6 +61,13 @@ export async function transferVdaTokens({
       cause: error,
     });
   }
+}
+
+export async function isTransactionSuccessfull(txHash: string) {
+  const transactionReceipt =
+    await blockchainProvider.getTransactionReceipt(txHash);
+
+  return transactionReceipt?.status === 1;
 }
 
 export function getBlockchainExplorerTransactionUrl(txHash: string): string {
