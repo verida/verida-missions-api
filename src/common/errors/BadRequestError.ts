@@ -2,7 +2,7 @@ import { FunctionalError } from "./FunctionalError";
 
 export class BadRequestError extends FunctionalError {
   constructor(
-    message = "BadRequestError",
+    message = "Bad request",
     userMessage?: string,
     options?: ErrorOptions
   ) {

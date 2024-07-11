@@ -2,7 +2,7 @@ import { FunctionalError } from "./FunctionalError";
 
 export class NotFoundError extends FunctionalError {
   constructor(
-    message = "NotFoundError",
+    message = "Not found",
     userMessage?: string,
     options?: ErrorOptions
   ) {

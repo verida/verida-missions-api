@@ -2,7 +2,7 @@ import { FunctionalError } from "../../common";
 
 export class TermsNotAcceptedError extends FunctionalError {
   constructor(
-    message = "TermsNotAcceptedError",
+    message = "Terms not accepted",
     userMessage = "The terms and conditions have not been accepted",
     options?: ErrorOptions
   ) {
