@@ -118,11 +118,14 @@ export class Service {
       }
     }
 
+    const hasClaimableAmount =
+      !!record && record.claimableAmount !== null && record.claimableAmount > 0;
+
     return {
-      isRegistered: !!record, // If the record exists, the user is registered
+      isRegistered: !!record && hasClaimableAmount, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        record && !record.claimed
+        record && hasClaimableAmount && !record.claimed
           ? record.claimableAmount ?? undefined
           : undefined,
       claimedTokenAmount:
@@ -472,11 +475,14 @@ export class Service {
       }
     }
 
+    const hasClaimableAmount =
+      !!record && record.claimableAmount !== null && record.claimableAmount > 0;
+
     return {
-      isRegistered: !!record, // If the record exists, the user is registered
+      isRegistered: !!record && hasClaimableAmount, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        record && !record.claimed
+        record && hasClaimableAmount && !record.claimed
           ? record.claimableAmount ?? undefined
           : undefined,
       claimedTokenAmount:
