@@ -1,6 +1,6 @@
 {
   "name": "@verida/missions-api",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "An API that supports Verida Missions for rewards and airdrops",
   "private": true,
   "repository": "https://github.com/verida/verida-missions-api",
