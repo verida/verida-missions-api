@@ -300,9 +300,9 @@ export class Service {
           // If the transaction has been initiated, the claimable amount
           // should be defined
         );
-
-        throw new AlreadyClaimedError();
       }
+
+      throw new AlreadyClaimedError();
     }
 
     if (!termsAccepted) {
@@ -550,9 +550,9 @@ export class Service {
           // If the transaction has been initiated, the claimable amount
           // should be defined
         );
-
-        throw new AlreadyClaimedError();
       }
+
+      throw new AlreadyClaimedError();
     }
 
     if (!termsAccepted) {
