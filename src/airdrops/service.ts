@@ -118,11 +118,14 @@ export class Service {
       }
     }
 
+    const hasClaimableAmount =
+      !!record && record.claimableAmount !== null && record.claimableAmount > 0;
+
     return {
-      isRegistered: !!record, // If the record exists, the user is registered
+      isRegistered: !!record && hasClaimableAmount, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        record && !record.claimed
+        record && hasClaimableAmount && !record.claimed
           ? record.claimableAmount ?? undefined
           : undefined,
       claimedTokenAmount:
@@ -472,11 +475,14 @@ export class Service {
       }
     }
 
+    const hasClaimableAmount =
+      !!record && record.claimableAmount !== null && record.claimableAmount > 0;
+
     return {
-      isRegistered: !!record, // If the record exists, the user is registered
+      isRegistered: !!record && hasClaimableAmount, // If the record exists, the user is registered
       isClaimed: record?.claimed ?? false,
       claimableTokenAmount:
-        record && !record.claimed
+        record && hasClaimableAmount && !record.claimed
           ? record.claimableAmount ?? undefined
           : undefined,
       claimedTokenAmount:
@@ -500,6 +506,13 @@ export class Service {
   ): Promise<Airdrop2ClaimSuccessResult> {
     const { termsAccepted, userEvmAddress } = claimDto;
     // const { termsAccepted, userEvmAddress, profile, ipAddress } = claimDto;
+
+    // FIXME: Having issues with the IP address API call, apparently when
+    // called multiple times, the first call is ok but the second one fails
+    // even though we are in the quota limit.
+    // Disabling the country check altogether for now. The country check is
+    // already done in the `getAirdrop2Status` method, whcih the frontend calls
+    // before the claim, so it should be fine.
 
     // Check country fromn profile
     // validateCountry(profile.country); // Throw an error if invalid
