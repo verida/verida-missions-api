@@ -1,3 +1,4 @@
+export * from "./AirdropClaimClosedError";
 export * from "./AlreadyClaimedError";
 export * from "./AlreadyRegisteredError";
 export * from "./InvalidClaimableTokenAmountError";

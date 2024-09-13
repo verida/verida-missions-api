@@ -12,21 +12,7 @@ routerV1.get("/1/check/:did", (req, res) =>
   controllerV1.airdrop1Check(req, res)
 );
 
-/**
- * @deprecated use /1/check/:did instead
- */
-routerV1.get("/1/proofs/:did", (req, res) =>
-  controllerV1.airdrop1Check(req, res)
-);
-
 routerV1.post("/1/register", (req, res) =>
-  controllerV1.airdrop1Register(req, res)
-);
-
-/**
- * @deprecated use /1/register instead
- */
-routerV1.post("/1/proofs", (req, res) =>
   controllerV1.airdrop1Register(req, res)
 );
 
