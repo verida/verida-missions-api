@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { BadRequestError, ErrorResponse } from "../common";
 import {
+  AirdropClaimClosedError,
   AlreadyClaimedError,
   AlreadyRegisteredError,
   InvalidEvmAddressError,
@@ -11,10 +12,8 @@ import {
 } from "./errors";
 import { Service } from "./service";
 import {
-  extractAirdrop1ClaimDtoFromRequest,
   extractAirdrop1RegistrationDtoFromRequest,
   extractAirdrop2CheckDtoFromRequest,
-  extractAirdrop2ClaimDtoFromRequest,
   extractDidFromRequestParams,
   extractWalletFromRequestParams,
 } from "./utils";
@@ -148,20 +147,33 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop1Claim(
-    req: Request,
+  airdrop1Claim(
+    _req: Request,
     res: Response<Airdrop1ClaimSuccessResponse | ErrorResponse>
   ) {
     try {
-      const claimDto = extractAirdrop1ClaimDtoFromRequest(req);
+      // Airdrop now closed, returning an error
 
-      const result = await this.service.claimAirdrop1(claimDto);
+      const airdropClaimClosedError = new AirdropClaimClosedError();
 
-      return res.status(201).send({
-        status: "success",
-        claimedTokenAmount: result.claimedTokenAmount,
-        transactionExplorerUrl: result.transactionExplorerUrl,
+      return res.status(403).send({
+        status: "error",
+        errorCode: airdropClaimClosedError.code,
+        errorMessage: airdropClaimClosedError.message,
+        errorUserMessage: airdropClaimClosedError.userMessage,
       });
+
+      // ---- Previous implementation ----
+
+      // const claimDto = extractAirdrop1ClaimDtoFromRequest(req);
+
+      // const result = await this.service.claimAirdrop1(claimDto);
+
+      // return res.status(201).send({
+      //   status: "success",
+      //   claimedTokenAmount: result.claimedTokenAmount,
+      //   transactionExplorerUrl: result.transactionExplorerUrl,
+      // });
     } catch (error) {
       if (
         error instanceof InvalidEvmAddressError ||
@@ -302,20 +314,33 @@ export class ControllerV1 {
    * @param res The Express response object
    * @returns The response
    */
-  async airdrop2Claim(
-    req: Request,
+  airdrop2Claim(
+    _req: Request,
     res: Response<Airdrop2ClaimSuccessResponse | ErrorResponse>
   ) {
     try {
-      const claimDto = extractAirdrop2ClaimDtoFromRequest(req);
+      // Airdrop now closed, returning an error
 
-      const result = await this.service.claimAirdrop2(claimDto);
+      const airdropClaimClosedError = new AirdropClaimClosedError();
 
-      return res.status(201).send({
-        status: "success",
-        claimedTokenAmount: result.claimedTokenAmount,
-        transactionExplorerUrl: result.transactionExplorerUrl,
+      return res.status(403).send({
+        status: "error",
+        errorCode: airdropClaimClosedError.code,
+        errorMessage: airdropClaimClosedError.message,
+        errorUserMessage: airdropClaimClosedError.userMessage,
       });
+
+      // ---- Previous implementation ----
+
+      // const claimDto = extractAirdrop2ClaimDtoFromRequest(req);
+
+      // const result = await this.service.claimAirdrop2(claimDto);
+
+      // return res.status(201).send({
+      //   status: "success",
+      //   claimedTokenAmount: result.claimedTokenAmount,
+      //   transactionExplorerUrl: result.transactionExplorerUrl,
+      // });
     } catch (error) {
       if (
         error instanceof InvalidEvmAddressError ||
